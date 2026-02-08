@@ -8,7 +8,14 @@ option(KEYTRAWL_BUILD_FUZZ "Build libFuzzer targets" OFF)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-add_library(keytrawl src/keytrawl.c)
+add_library(keytrawl
+    src/ktw_catalog.c
+    src/ktw_scanner.c
+    src/ktw_pem.c
+    src/ktw_der.c
+    src/ktw_ssh.c
+    src/ktw_token.c
+    src/ktw_config.c)
 add_library(keytrawl::keytrawl ALIAS keytrawl)
 target_include_directories(keytrawl PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

@@ -13,6 +13,17 @@
       }
     },
     {
+      "name": "ubsan",
+      "binaryDir": "${sourceDir}/build/ubsan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_SHARED_LIBS": "ON",
+        "KEYTRAWL_BUILD_TESTS": "ON",
+        "KEYTRAWL_BUILD_EXAMPLES": "ON",
+        "CMAKE_C_FLAGS": "-g -std=c99 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror -fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
+      }
+    },
+    {
       "name": "msvc",
       "binaryDir": "${sourceDir}/build/msvc",
       "cacheVariables": {
@@ -46,7 +57,16 @@
     {
       "name": "dev",
       "configurePreset": "dev",
-      "output": { "outputOnFailure": true }
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ubsan",
+      "configurePreset": "ubsan",
+      "output": {
+        "outputOnFailure": true
+      }
     }
   ]
 }
