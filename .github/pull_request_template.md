@@ -1,0 +1,3 @@
+- [ ] `ctest --preset dev` passes
+- [ ] a new detector has a test with the input cut at every byte
+- [ ] no real secret in tests or fixtures
