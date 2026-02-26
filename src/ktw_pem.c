@@ -214,8 +214,9 @@ static int ktw_pem_line_start(ktw_pem_t *p, unsigned char c)
 
 static int ktw_pem_to_end(ktw_pem_t *p)
 {
-    if (p->nfull < 2)
+    if (p->nfull < 1)
         return 0;
+    p->short_body = p->nfull < 2;
     p->state = KTW_PS_END;
     p->idx = 0;
     return 1;
@@ -411,6 +412,8 @@ static int ktw_pem_report(ktw_scanner_t *s, ktw_pem_t *p)
     if (!ktw_pem_encrypted(p) && p->label != KTW_L_OPENSSH && !(checks & KTW_CHECK_DER_OUTER))
         return 0;
     conf = ktw_pem_confidence(p, &checks, &flags, &alg);
+    if (p->short_body && !(checks & KTW_CHECK_STRUCTURE))
+        return 0;
     snprintf(s->finding.evidence, sizeof(s->finding.evidence), "-----BEGIN %s----- (%llu bytes)",
              ktw_labels[p->label], (unsigned long long)(p->end - p->start));
     return ktw_emit(s, ktw_label_kind[p->label], NULL, alg, conf, checks, flags, p->start, p->end - p->start, 0);

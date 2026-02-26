@@ -1,0 +1,3 @@
+*.der binary
+*.pem text eol=lf
+*.abi -diff

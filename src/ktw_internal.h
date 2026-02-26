@@ -145,6 +145,7 @@ typedef struct {
     uint8_t hdrlen;
     uint8_t ohn;
     uint8_t ok;
+    uint8_t short_body;
     uint32_t idx;
     uint32_t nfull;
     uint64_t linelen;
