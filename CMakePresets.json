@@ -51,6 +51,16 @@
         "BUILD_SHARED_LIBS": "ON",
         "CMAKE_C_FLAGS": "-g -Og"
       }
+    },
+    {
+      "name": "fuzz-ubsan",
+      "binaryDir": "${sourceDir}/build/fuzz-ubsan",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "KEYTRAWL_BUILD_FUZZ": "ON",
+        "CMAKE_C_FLAGS": "-g -O1 -fsanitize=fuzzer-no-link,undefined -fno-sanitize-recover=all"
+      }
     }
   ],
   "testPresets": [
