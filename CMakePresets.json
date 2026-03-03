@@ -61,6 +61,16 @@
         "KEYTRAWL_BUILD_FUZZ": "ON",
         "CMAKE_C_FLAGS": "-g -O1 -fsanitize=fuzzer-no-link,undefined -fno-sanitize-recover=all"
       }
+    },
+    {
+      "name": "release",
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_SHARED_LIBS": "ON",
+        "KEYTRAWL_BUILD_EXAMPLES": "ON",
+        "KEYTRAWL_BUILD_BENCH": "ON"
+      }
     }
   ],
   "testPresets": [

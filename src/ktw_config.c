@@ -193,13 +193,18 @@ static int ktw_wifi_eol(ktw_scanner_t *s, uint64_t abs)
 
 static int ktw_auth_space(unsigned char b)
 {
-    return b == ' ' || b == '\t' || b == '\r' || b == '\v' || b == '\f';
+    return b == ' ' || b == '\t' || b == 0x1f;
+}
+
+static int ktw_auth_break(unsigned char b)
+{
+    return b == '\n' || b == '\r' || b == '\v' || b == '\f' || (b >= 0x1c && b <= 0x1e);
 }
 
 static void ktw_auth_token_end(ktw_cfg_t *c)
 {
     if (c->k == c->type_tok) {
-        char type[48];
+        char type[sizeof(c->tok)];
 
         memcpy(type, c->tok, c->typelen);
         type[c->typelen] = '\0';
@@ -221,7 +226,7 @@ static void ktw_auth_struct(ktw_cfg_t *c, unsigned char b)
     unsigned char out;
 
     if (!c->struct_in) {
-        if (ktw_auth_space(b))
+        if (b == ' ' || b == '\t')
             return;
         c->struct_in = 1;
         c->inquote = 0;
@@ -231,14 +236,14 @@ static void ktw_auth_struct(ktw_cfg_t *c, unsigned char b)
             ktw_b64_init(&c->b64);
             ktw_ssh_init(&c->ssh, KTW_SSH_PUBLIC);
         }
-    } else if (ktw_auth_space(b) && !c->inquote) {
+    } else if ((b == ' ' || b == '\t') && !c->inquote) {
         c->struct_in = 0;
         ktw_auth_token_end(c);
         return;
     }
     if (b == '"' && c->k == 0)
         c->inquote = !c->inquote;
-    if (c->k == c->type_tok && c->typelen < sizeof(c->first) - 1)
+    if (c->k == c->type_tok && c->typelen < sizeof(c->tok) - 1)
         c->tok[c->typelen++] = b;
     if (c->k == c->blob_tok && ktw_b64_put(&c->b64, b, &out))
         ktw_ssh_put(&c->ssh, out);
@@ -276,16 +281,13 @@ static void ktw_auth_char(ktw_cfg_t *c, unsigned char b)
     ktw_auth_struct(c, b);
 }
 
-static void ktw_auth_evidence(ktw_scanner_t *s, int valid)
+static void ktw_auth_evidence(ktw_scanner_t *s)
 {
     const ktw_cfg_t *c = &s->cfg;
     char *ev = s->finding.evidence;
     size_t size = sizeof(s->finding.evidence), n;
 
-    if (valid)
-        n = ktw_escape(ev, size, c->tok, c->typelen);
-    else
-        n = ktw_escape(ev, size, (const unsigned char *)c->first, c->firstlen);
+    n = ktw_escape(ev, size, (const unsigned char *)c->first, c->firstlen);
     n += ktw_escape(ev + n, size - n, (const unsigned char *)" key, comment '", 15);
     if (c->plain_count > 2)
         n += ktw_escape(ev + n, size - n, (const unsigned char *)c->last, c->lastlen);
@@ -308,7 +310,7 @@ static int ktw_auth_eol(ktw_scanner_t *s, uint64_t abs)
     c->tok[c->typelen < sizeof(c->tok) ? c->typelen : sizeof(c->tok) - 1] = '\0';
     valid = c->typeknown && c->blob_done && ktw_b64_valid(&c->b64) && ktw_ssh_valid(&c->ssh) &&
             strcmp(c->ssh.type, (const char *)c->tok) == 0;
-    ktw_auth_evidence(s, valid);
+    ktw_auth_evidence(s);
     return ktw_emit(s, KTW_KIND_AUTHORIZED_KEY, NULL, valid ? ktw_ssh_alg(c->ssh.type) : KTW_ALG_NONE,
                     valid ? KTW_CONFIRMED : KTW_INDICATOR,
                     KTW_CHECK_CONTEXT | (valid ? KTW_CHECK_BASE64 | KTW_CHECK_STRUCTURE : 0), 0, c->line_start,
@@ -323,12 +325,19 @@ static int ktw_cfg_eol(ktw_scanner_t *s, uint64_t abs)
 int ktw_cfg_step(ktw_scanner_t *s, unsigned char b)
 {
     ktw_cfg_t *c = &s->cfg;
+    int cr = c->cr;
 
-    if (b == '\n') {
+    c->cr = 0;
+    if (c->mode == KTW_CFG_AUTHKEYS && cr && b == '\n') {
+        c->line_start = s->now + 1;
+        return 0;
+    }
+    if (b == '\n' || (c->mode == KTW_CFG_AUTHKEYS && ktw_auth_break(b))) {
         if (ktw_cfg_eol(s, s->now))
             return 1;
         c->line++;
         ktw_cfg_line(c, s->now + 1);
+        c->cr = b == '\r';
         return 0;
     }
     if (c->mode == KTW_CFG_WIFI)

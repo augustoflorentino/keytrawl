@@ -210,6 +210,7 @@ typedef struct {
     uint8_t type_tok;
     uint8_t blob_tok;
     uint8_t blob_done;
+    uint8_t cr;
     uint32_t plain_count;
     uint32_t s;
     uint32_t e;
@@ -219,8 +220,8 @@ typedef struct {
     uint64_t tok_start;
     uint64_t rs_pos;
     unsigned char tok[KTW_CAPTURE];
-    char first[48];
-    char last[48];
+    char first[100];
+    char last[100];
     ktw_b64_t b64;
     ktw_ssh_t ssh;
 } ktw_cfg_t;
