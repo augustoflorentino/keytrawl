@@ -496,6 +496,31 @@ static void test_pem_forms(const ktw_catalog_t *c)
     free(key);
 }
 
+static void test_der_inner(const ktw_catalog_t *c)
+{
+    size_t len;
+    unsigned char *key = load_key("ec256-1.p8.der", &len);
+
+    CHECK(key != NULL && len > 40);
+    if (key == NULL)
+        return;
+    CHECK(scan_chunked(c, NULL, key, len, 4096, 0, &sink) == KTW_OK && sink.n == 1);
+    CHECK(sink.n == 1 && sink.recs[0].confidence == KTW_CONFIRMED && sink.recs[0].algorithm == KTW_ALG_EC);
+    CHECK(key[31] == 0x02 && key[32] == 0x01 && key[33] == 0x01);
+    key[33] = 0x02;
+    CHECK(scan_chunked(c, NULL, key, len, 4096, 0, &sink) == KTW_OK && sink.n == 0);
+    free(key);
+    key = load_key("ed25519-1.p8.der", &len);
+    CHECK(key != NULL && len == 48);
+    if (key == NULL)
+        return;
+    CHECK(scan_chunked(c, NULL, key, len, 4096, 0, &sink) == KTW_OK && sink.n == 1);
+    CHECK(sink.n == 1 && sink.recs[0].algorithm == KTW_ALG_ED25519);
+    key[15] = 0x1f;
+    CHECK(scan_chunked(c, NULL, key, len, 4096, 0, &sink) == KTW_OK && sink.n == 0);
+    free(key);
+}
+
 static void test_wifi(const ktw_catalog_t *c)
 {
     static const char wireless[] = "config wifi-iface 'default_radio0'\n"
@@ -751,6 +776,7 @@ int main(int argc, char **argv)
     test_other_tokens(c);
     test_pem_baits(c);
     test_pem_forms(c);
+    test_der_inner(c);
     test_wifi(c);
     test_authorized_keys(c);
     test_user_patterns();

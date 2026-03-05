@@ -5,6 +5,8 @@
 enum { KTW_DP_TAG, KTW_DP_LEN, KTW_DP_LENX, KTW_DP_CONTENT };
 enum { KTW_ACT_FAIL, KTW_ACT_DESCEND, KTW_ACT_SKIP };
 
+enum { KTW_IN_NONE, KTW_IN_RSA, KTW_IN_SEC1, KTW_IN_INT, KTW_IN_RAW };
+
 #define KTW_BARE_MIN 32u
 #define KTW_BARE_MAX 65536u
 
@@ -67,11 +69,37 @@ static int ktw_der_pbe_oid(const ktw_der_t *d)
     return !d->bare && d->clen == 10 && memcmp(d->cap, pkcs12, 9) == 0;
 }
 
-static int ktw_der_header_l1(ktw_der_t *d, unsigned idx)
+static int ktw_der_inner(ktw_der_t *d)
+{
+    switch (d->alg) {
+    case KTW_ALG_RSA:
+    case KTW_ALG_RSA_PSS:
+        d->inner = KTW_IN_RSA;
+        break;
+    case KTW_ALG_EC:
+        d->inner = KTW_IN_SEC1;
+        break;
+    case KTW_ALG_DSA:
+        d->inner = KTW_IN_INT;
+        break;
+    case KTW_ALG_ED25519:
+    case KTW_ALG_X25519:
+    case KTW_ALG_ED448:
+    case KTW_ALG_X448:
+        d->inner = KTW_IN_RAW;
+        d->rawlen = d->alg == KTW_ALG_ED448 ? 57 : d->alg == KTW_ALG_X448 ? 56 : 32;
+        break;
+    default:
+        return KTW_ACT_SKIP;
+    }
+    return KTW_ACT_DESCEND;
+}
+
+static int ktw_der_header_l1(ktw_der_t *d, int schema, unsigned idx)
 {
     uint8_t t = d->tag;
 
-    switch (d->schema) {
+    switch (schema) {
     case KTW_SCHEMA_TRAD:
         return t == 0x02 && idx < 9 ? KTW_ACT_SKIP : KTW_ACT_FAIL;
     case KTW_SCHEMA_SEC1:
@@ -83,9 +111,10 @@ static int ktw_der_header_l1(ktw_der_t *d, unsigned idx)
         }
         return KTW_ACT_FAIL;
     case KTW_SCHEMA_PKCS8:
-        if (idx < 3)
-            return t == (idx == 0 ? 0x02 : idx == 1 ? 0x30 : 0x04) ? (idx == 1 ? KTW_ACT_DESCEND : KTW_ACT_SKIP)
-                                                                     : KTW_ACT_FAIL;
+        if (idx < 2)
+            return t == (idx == 0 ? 0x02 : 0x30) ? (idx == 1 ? KTW_ACT_DESCEND : KTW_ACT_SKIP) : KTW_ACT_FAIL;
+        if (idx == 2)
+            return t == 0x04 ? ktw_der_inner(d) : KTW_ACT_FAIL;
         if ((t == 0xA0 && d->extra == 0) || ((t == 0x81 || t == 0xA1) && d->extra < 2)) {
             d->extra = t == 0xA0 ? 1 : 2;
             return KTW_ACT_SKIP;
@@ -98,13 +127,13 @@ static int ktw_der_header_l1(ktw_der_t *d, unsigned idx)
     }
 }
 
-static int ktw_der_header_l2(const ktw_der_t *d, unsigned idx)
+static int ktw_der_header_l2(const ktw_der_t *d, int schema, unsigned idx)
 {
     uint8_t t = d->tag;
 
-    switch (d->schema) {
+    switch (schema) {
     case KTW_SCHEMA_SEC1:
-        return idx == 0 && t == (d->ctag[1] == 0xA0 ? 0x06 : 0x03) ? KTW_ACT_SKIP : KTW_ACT_FAIL;
+        return idx == 0 && t == (d->ctag[d->depth - 1] == 0xA0 ? 0x06 : 0x03) ? KTW_ACT_SKIP : KTW_ACT_FAIL;
     case KTW_SCHEMA_PKCS8:
         if (idx == 0)
             return t == 0x06 ? KTW_ACT_SKIP : KTW_ACT_FAIL;
@@ -123,9 +152,18 @@ static int ktw_der_int_ok(const ktw_der_t *d)
     return !(d->clen > 1 && d->cap[0] == 0 && d->cap[1] < 0x80);
 }
 
-static int ktw_der_prim_l1(ktw_der_t *d, unsigned idx)
+static int ktw_der_header_wrap(const ktw_der_t *d, unsigned idx)
 {
-    switch (d->schema) {
+    static const uint8_t tags[] = {0, 0x30, 0x30, 0x02, 0x04};
+
+    if (idx != 0 || d->tag != tags[d->inner])
+        return KTW_ACT_FAIL;
+    return d->inner == KTW_IN_RSA || d->inner == KTW_IN_SEC1 ? KTW_ACT_DESCEND : KTW_ACT_SKIP;
+}
+
+static int ktw_der_prim_l1(ktw_der_t *d, int schema, unsigned idx)
+{
+    switch (schema) {
     case KTW_SCHEMA_TRAD:
         if (idx == 0)
             return d->clen == 1 && d->cap[0] == 0;
@@ -138,7 +176,8 @@ static int ktw_der_prim_l1(ktw_der_t *d, unsigned idx)
     case KTW_SCHEMA_SEC1:
         if (idx == 0)
             return d->clen == 1 && d->cap[0] == 1;
-        d->alg = KTW_ALG_EC;
+        if (d->schema == KTW_SCHEMA_SEC1)
+            d->alg = KTW_ALG_EC;
         return d->clen >= 1 && d->clen <= 66;
     case KTW_SCHEMA_PKCS8:
         if (idx == 0)
@@ -150,9 +189,9 @@ static int ktw_der_prim_l1(ktw_der_t *d, unsigned idx)
     }
 }
 
-static int ktw_der_prim_l2(ktw_der_t *d, unsigned idx)
+static int ktw_der_prim_l2(ktw_der_t *d, int schema, unsigned idx)
 {
-    if (d->schema == KTW_SCHEMA_PKCS8 && idx == 0) {
+    if (schema == KTW_SCHEMA_PKCS8 && idx == 0) {
         d->alg = (uint8_t)ktw_der_key_oid(d);
         if (d->alg == KTW_ALG_NONE && d->bare)
             return 0;
@@ -160,9 +199,24 @@ static int ktw_der_prim_l2(ktw_der_t *d, unsigned idx)
             d->alg = KTW_ALG_UNKNOWN;
         return 1;
     }
-    if (d->schema == KTW_SCHEMA_EPKI && idx == 0)
+    if (schema == KTW_SCHEMA_EPKI && idx == 0)
         return ktw_der_pbe_oid(d);
-    return d->schema != KTW_SCHEMA_SEC1 || d->clen > 0;
+    return schema != KTW_SCHEMA_SEC1 || d->clen > 0;
+}
+
+static int ktw_der_prim_wrap(const ktw_der_t *d)
+{
+    return d->inner == KTW_IN_INT ? ktw_der_int_ok(d) : d->clen == d->rawlen;
+}
+
+static int ktw_der_rules(const ktw_der_t *d, unsigned level, unsigned *rel)
+{
+    if (d->inner != KTW_IN_NONE && level >= 3) {
+        *rel = level - 2;
+        return d->inner == KTW_IN_SEC1 ? KTW_SCHEMA_SEC1 : KTW_SCHEMA_TRAD;
+    }
+    *rel = level;
+    return d->schema;
 }
 
 static int ktw_near_half(uint32_t part, uint32_t whole)
@@ -172,19 +226,21 @@ static int ktw_near_half(uint32_t part, uint32_t whole)
     return twice + 2 >= whole && twice <= whole + 2;
 }
 
-static int ktw_der_trad_ok(ktw_der_t *d)
+static int ktw_der_trad_ok(ktw_der_t *d, unsigned n)
 {
     const uint32_t *l = d->ilen;
+    int top = d->schema == KTW_SCHEMA_TRAD;
 
-    if (d->count[1] == 9) {
+    if (n == 9) {
         if (l[1] < 64 || !(d->odd & 2) || l[2] > l[1] || l[3] > l[1])
             return 0;
         if (!ktw_near_half(l[4], l[1]) || !ktw_near_half(l[5], l[1]) || !(d->odd & 0x30))
             return 0;
-        d->alg = KTW_ALG_RSA;
+        if (top)
+            d->alg = KTW_ALG_RSA;
         return l[6] <= l[4] && l[7] <= l[5] && l[8] <= l[4];
     }
-    if (d->count[1] == 6) {
+    if (n == 6 && top) {
         if (l[1] < 64 || (l[2] != 20 && l[2] != 28 && l[2] != 32))
             return 0;
         d->alg = KTW_ALG_DSA;
@@ -195,12 +251,19 @@ static int ktw_der_trad_ok(ktw_der_t *d)
 
 static int ktw_der_close(ktw_der_t *d, unsigned level)
 {
-    unsigned n = d->count[level];
+    unsigned n = d->count[level], rel;
+    int schema;
 
-    if (level == 1) {
-        switch (d->schema) {
+    if (d->inner != KTW_IN_NONE && level == 2) {
+        d->inner = KTW_IN_NONE;
+        d->extra = 0;
+        return n == 1;
+    }
+    schema = ktw_der_rules(d, level, &rel);
+    if (rel == 1) {
+        switch (schema) {
         case KTW_SCHEMA_TRAD:
-            return ktw_der_trad_ok(d);
+            return ktw_der_trad_ok(d, n);
         case KTW_SCHEMA_SEC1:
             return n >= 2;
         case KTW_SCHEMA_PKCS8:
@@ -209,9 +272,22 @@ static int ktw_der_close(ktw_der_t *d, unsigned level)
             return n == 2;
         }
     }
-    if (d->schema == KTW_SCHEMA_SEC1)
+    if (schema == KTW_SCHEMA_SEC1)
         return n == 1;
-    return d->schema == KTW_SCHEMA_PKCS8 ? n >= 1 : n == 2;
+    return schema == KTW_SCHEMA_PKCS8 ? n >= 1 : n == 2;
+}
+
+static int ktw_der_header_act(ktw_der_t *d, unsigned level, unsigned idx)
+{
+    unsigned rel;
+    int schema;
+
+    if (d->inner != KTW_IN_NONE && level == 2)
+        return ktw_der_header_wrap(d, idx);
+    schema = ktw_der_rules(d, level, &rel);
+    if (rel == 1)
+        return ktw_der_header_l1(d, schema, idx);
+    return rel == 2 ? ktw_der_header_l2(d, schema, idx) : KTW_ACT_FAIL;
 }
 
 static void ktw_der_header(ktw_der_t *d)
@@ -229,10 +305,8 @@ static void ktw_der_header(ktw_der_t *d)
             act = KTW_ACT_FAIL;
         if ((uint64_t)d->total + d->len > UINT32_MAX)
             act = KTW_ACT_FAIL;
-    } else if (level == 1) {
-        act = ktw_der_header_l1(d, idx);
     } else {
-        act = level == 2 ? ktw_der_header_l2(d, idx) : KTW_ACT_FAIL;
+        act = ktw_der_header_act(d, level, idx);
     }
     if (act == KTW_ACT_FAIL || (act == KTW_ACT_DESCEND && level + 1 > KTW_DER_DEPTH)) {
         d->failed = 1;
@@ -253,8 +327,15 @@ static void ktw_der_header(ktw_der_t *d)
 
 static void ktw_der_prim_end(ktw_der_t *d)
 {
-    unsigned level = d->depth, idx = d->count[level] - 1;
-    int ok = level == 1 ? ktw_der_prim_l1(d, idx) : ktw_der_prim_l2(d, idx);
+    unsigned level = d->depth, idx = d->count[level] - 1, rel;
+    int schema, ok;
+
+    if (d->inner != KTW_IN_NONE && level == 2) {
+        ok = ktw_der_prim_wrap(d);
+    } else {
+        schema = ktw_der_rules(d, level, &rel);
+        ok = rel == 1 ? ktw_der_prim_l1(d, schema, idx) : ktw_der_prim_l2(d, schema, idx);
+    }
 
     d->phase = KTW_DP_TAG;
     if (!ok)

@@ -4,6 +4,7 @@ project(keytrawl VERSION 0.1.0 DESCRIPTION "Streaming secret finder for raw byte
 option(KEYTRAWL_BUILD_TESTS "Build tests" OFF)
 option(KEYTRAWL_BUILD_EXAMPLES "Build examples" OFF)
 option(KEYTRAWL_BUILD_FUZZ "Build libFuzzer targets" OFF)
+option(KEYTRAWL_BUILD_BENCH "Build the benchmark (POSIX threads)" OFF)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -74,4 +75,10 @@ if(KEYTRAWL_BUILD_FUZZ)
     add_executable(fuzz_scan fuzz/fuzz_scan.c)
     target_link_libraries(fuzz_scan PRIVATE keytrawl)
     target_link_options(fuzz_scan PRIVATE -fsanitize=fuzzer)
+endif()
+
+if(KEYTRAWL_BUILD_BENCH)
+    find_package(Threads REQUIRED)
+    add_executable(keytrawl_bench bench/bench.c)
+    target_link_libraries(keytrawl_bench PRIVATE keytrawl Threads::Threads)
 endif()

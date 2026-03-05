@@ -101,6 +101,8 @@ typedef struct {
     uint8_t last;
     uint8_t odd;
     uint8_t extra;
+    uint8_t inner;
+    uint8_t rawlen;
     uint8_t ctag[KTW_DER_DEPTH + 1];
     uint16_t count[KTW_DER_DEPTH + 1];
     unsigned char cap[16];
