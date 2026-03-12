@@ -1,27 +1,47 @@
 #define KTW_IMPLEMENTATION
 #include "keytrawl/keytrawl.h"
 
-static int count_piece(void *ctx, const unsigned char *piece, size_t piece_len)
+#include <string.h>
+
+typedef struct {
+    int count;
+    int kind;
+    unsigned long long offset;
+} seen_t;
+
+static int remember(void *ctx, const ktw_finding_t *f)
 {
-    (void)piece;
-    (void)piece_len;
-    (*(int *)ctx)++;
+    seen_t *seen = ctx;
+
+    seen->count++;
+    seen->kind = ktw_finding_kind(f);
+    seen->offset = (unsigned long long)ktw_finding_offset(f);
     return 0;
 }
 
 int main(void)
 {
-    ktw_buf_t *buf = NULL;
-    int pieces = 0;
+    static const char data[] = "token = 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\n";
+    ktw_catalog_t *catalog = NULL;
+    ktw_scanner_t *scanner = NULL;
+    seen_t seen = {0, 0, 0};
+    size_t half = sizeof data / 2;
     int status;
 
-    status = ktw_buf_create(NULL, NULL, NULL, &buf);
+    status = ktw_catalog_create(KTW_GROUP_ALL, NULL, NULL, NULL, &catalog);
     if (status == KTW_OK)
-        status = ktw_buf_append(buf, (const unsigned char *)"a\nb", 3);
+        status = ktw_catalog_compile(catalog);
     if (status == KTW_OK)
-        status = ktw_buf_split(buf, '\n', count_piece, &pieces);
-    if (ktw_buf_len(buf) != 3 || ktw_buf_data(buf) == NULL || ktw_strerror(status) == NULL)
-        status = KTW_ERR_ARG;
-    ktw_buf_destroy(buf);
-    return status == KTW_OK && pieces == 2 ? 0 : 1;
+        status = ktw_scanner_create(catalog, NULL, NULL, NULL, &scanner);
+    if (status == KTW_OK)
+        status = ktw_feed(scanner, (const unsigned char *)data, half, remember, &seen);
+    if (status == KTW_OK)
+        status = ktw_feed(scanner, (const unsigned char *)data + half, strlen(data) - half, remember, &seen);
+    if (status == KTW_OK)
+        status = ktw_finish(scanner, remember, &seen);
+    ktw_scanner_destroy(scanner);
+    ktw_catalog_destroy(catalog);
+    if (ktw_strerror(status) == NULL)
+        return 1;
+    return status == KTW_OK && seen.count == 1 && seen.kind == KTW_KIND_GITHUB_TOKEN && seen.offset == 8 ? 0 : 1;
 }
