@@ -247,10 +247,17 @@ static void ktw_slow_byte(ktw_scanner_t *s, unsigned char b, uint64_t abs)
 static size_t ktw_fast(ktw_scanner_t *s, const unsigned char *data, size_t i, size_t len)
 {
     const uint16_t *t = s->cat->table;
-    unsigned lim = s->cat->first_out;
+    const uint8_t *leaves = s->cat->leaves;
+    unsigned lim = s->cat->first_out, root = s->cat->root;
     unsigned st = s->state;
 
     while (i < len) {
+        if (st == root) {
+            while (i < len && !leaves[data[i]])
+                i++;
+            if (i == len)
+                break;
+        }
         st = t[((size_t)st << 8) | data[i]];
         i++;
         if (st >= lim)

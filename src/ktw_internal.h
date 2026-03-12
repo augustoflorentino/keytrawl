@@ -60,6 +60,7 @@ struct ktw_catalog {
     unsigned nstates;
     unsigned first_out;
     unsigned root;
+    uint8_t leaves[256];
     size_t user_buf;
 };
 

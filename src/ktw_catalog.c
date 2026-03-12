@@ -251,6 +251,8 @@ static int ktw_renumber(ktw_catalog_t *c, const uint16_t *t, unsigned n, const u
     c->first_out = k;
     c->root = map[0];
     c->nstates = n;
+    for (o = 0; o < 256; o++)
+        c->leaves[o] = c->table[((size_t)c->root << 8) | o] != c->root;
     ktw_cat_free(c, map);
     return KTW_OK;
 }
