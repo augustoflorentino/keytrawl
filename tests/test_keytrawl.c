@@ -521,6 +521,27 @@ static void test_der_inner(const ktw_catalog_t *c)
     free(key);
 }
 
+static void test_der_v2(const ktw_catalog_t *c)
+{
+    unsigned char k[16 + 32 + 4 + 35];
+    size_t n = 0;
+    unsigned i;
+
+    memcpy(k, "\x30\x55\x02\x01\x01\x30\x05\x06\x03\x2b\x65\x70\x04\x22\x04\x20", 16);
+    n = 16;
+    for (i = 0; i < 32; i++)
+        k[n++] = (unsigned char)(i * 7 + 1);
+    memcpy(k + n, "\xa0\x00\x81\x21\x00", 5);
+    n += 5;
+    for (i = 0; i < 32; i++)
+        k[n++] = (unsigned char)(i * 5 + 3);
+    k[1] = (unsigned char)(n - 2);
+    CHECK(scan_chunked(c, NULL, k, n, 4096, 0, &sink) == KTW_OK && sink.n == 1);
+    CHECK(sink.n == 1 && sink.recs[0].kind == KTW_KIND_DER_PKCS8 && sink.recs[0].length == n);
+    k[48] = 0xa2;
+    CHECK(scan_chunked(c, NULL, k, n, 4096, 0, &sink) == KTW_OK && sink.n == 0);
+}
+
 static void test_wifi(const ktw_catalog_t *c)
 {
     static const char wireless[] = "config wifi-iface 'default_radio0'\n"
@@ -777,6 +798,7 @@ int main(int argc, char **argv)
     test_pem_baits(c);
     test_pem_forms(c);
     test_der_inner(c);
+    test_der_v2(c);
     test_wifi(c);
     test_authorized_keys(c);
     test_user_patterns();
