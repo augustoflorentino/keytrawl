@@ -191,6 +191,13 @@ def unpacked(source, buffer, limits=None):
         for entry in located.filesystem.files():
             yield source, entry
 
+def file_entries(paths):
+    """Plain files, each one entry under its own path."""
+    from fwtriage.model.vfs import Entry
+
+    for path in paths:
+        yield "file", Entry(str(path), "file", 0o644, 0, 0, Path(path).read_bytes(), None)
+
 def bait_entries():
     from fwtriage.model.vfs import Entry
 
@@ -240,6 +247,7 @@ def main():
     parser.add_argument("--fwtriage", type=Path, required=True)
     parser.add_argument("--lib", required=True)
     parser.add_argument("--images", nargs="*", default=[])
+    parser.add_argument("--files", nargs="*", default=[])
     parser.add_argument("--random", type=int, default=0)
     parser.add_argument("--seed", type=int, default=1)
     args = parser.parse_args()
@@ -248,6 +256,7 @@ def main():
 
     lib, tally = Lib(args.lib), Tally()
     sources = [corpus_entries(args.fwtriage), bait_entries(), random_entries(args.random, args.seed)]
+    sources.append(file_entries(args.files))
     sources += [unpacked(f"image:{Path(p).name[:12]}", Path(p).read_bytes()) for p in args.images]
     for source in sources:
         for name, entry in source:
