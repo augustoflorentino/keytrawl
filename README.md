@@ -14,7 +14,7 @@ when its structure checks out; what is only shaped like a secret is reported as 
 |---|---|---|
 | PEM private keys: RSA, EC, DSA, OpenSSH, PKCS#8, encrypted PKCS#8 | base64 decoded on the fly; the DER walked against its ASN.1 schema (RFC 8017, RFC 5915, RFC 5208, RFC 5958); OpenSSH `openssh-key-v1` framing | confirmed when the structure holds, indicator otherwise |
 | Bare DER private keys: PKCS#1 RSA, DSA, SEC 1 EC, PKCS#8, PKCS#8 encrypted with PBES2 | same schemas, plus the key inside a PKCS#8 envelope and the relations of RSA parameters (odd modulus, primes of half its size) | confirmed |
-| AWS access key ID `AKIA`/`ASIA` | prefix and alphabet ([IAM identifiers](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html)); flags a 40-character secret key within 240 bytes | likely |
+| AWS access key ID `AKIA`/`ASIA` | prefix and alphabet ([IAM identifiers](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html)); marks a 40-character secret key in the 240 bytes after it (`KTW_CHECK_PAIRED`) | likely |
 | GitHub tokens `ghp_` `gho_` `ghu_` `ghs_` `ghr_` | CRC32 of the token against its last 6 characters ([token formats](https://github.blog/2021-04-05-behind-githubs-new-authentication-token-formats/)); a failed checksum reports nothing | confirmed |
 | GitHub `github_pat_` | length and alphabet of both parts | likely |
 | Google API key `AIza` | length 39 and alphabet; no published specification | likely |
