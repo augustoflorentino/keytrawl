@@ -34,7 +34,7 @@ typedef struct {
     char evidence[256];
 } rec_t;
 
-#define RECS_MAX 256
+#define RECS_MAX 2048
 
 typedef struct {
     rec_t recs[RECS_MAX];
@@ -732,38 +732,47 @@ static int same_findings(const sink_t *a, const sink_t *b)
     return 1;
 }
 
-static unsigned char *mixed_stream(size_t *out_len)
+static unsigned char *mixed_stream(size_t *out_len, size_t *out_keys)
 {
-    static const char *const files[] = {"rsa1024-1.trad.pem", "ec256-1.trad.der", "ed25519-1.p8.der",
-                                        "ssh-ecdsa-256-enc-1", "dsa1024-1.p8enc.der", "ec384-2.legacyenc.pem"};
+    static entry_t entries[ENTRIES_MAX];
     static const char tokens[] = "\nAKIAIOSFODNN7EXAMPLE wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY " GHP_VALID
                                  " xoxb-123456789012-1234567890123-AbCdEfGhIjKlMnOpQrStUvWx\n";
-    unsigned char *buf = malloc(64 * 1024), *key;
-    size_t n = 0, len, i;
+    size_t n = load_manifest(entries), cap = 1 << 20, used = 0, len, i;
+    unsigned char *buf = malloc(cap), *key;
 
-    for (i = 0; buf != NULL && i < sizeof(files) / sizeof(files[0]); i++) {
-        key = load_key(files[i], &len);
-        if (key != NULL && n + len + 600 < 64 * 1024) {
-            fill_random(buf + n, 300);
-            memcpy(buf + n + 300, key, len);
-            memcpy(buf + n + 300 + len, tokens, sizeof(tokens) - 1);
-            n += 300 + len + sizeof(tokens) - 1;
+    *out_keys = 0;
+    for (i = 0; buf != NULL && i < n; i++) {
+        key = load_key(entries[i].file, &len);
+        if (key != NULL && used + 300 + len + sizeof(tokens) <= cap) {
+            fill_random(buf + used, 300);
+            memcpy(buf + used + 300, key, len);
+            memcpy(buf + used + 300 + len, tokens, sizeof(tokens) - 1);
+            used += 300 + len + sizeof(tokens) - 1;
+            ++*out_keys;
         }
         free(key);
     }
-    *out_len = n;
+    *out_len = used;
     return buf;
 }
 
 static void test_m5(const ktw_catalog_t *c)
 {
     static const char wireless[] = "\toption key 'sup3rS3cretPass'\npsk==========abc\n";
-    size_t len, chunk, bad = 0;
-    unsigned char *data = mixed_stream(&len);
+    size_t len, keys, chunk, bad = 0, i, kinds[KTW_KIND_AUTHORIZED_KEY + 1] = {0};
+    unsigned char *data = mixed_stream(&len, &keys);
     unsigned seed;
 
+    CHECK(data != NULL && keys >= 200);
     CHECK(data != NULL && scan_chunked(c, NULL, data, len, len, 0, &sink) == KTW_OK);
-    CHECK(sink.n >= 12);
+    for (i = 0; data != NULL && i < sink.n && i < RECS_MAX; i++) {
+        kinds[sink.recs[i].kind <= KTW_KIND_AUTHORIZED_KEY ? sink.recs[i].kind : 0]++;
+        CHECK(evidence_ok(data, &sink.recs[i]));
+    }
+    CHECK(sink.n < RECS_MAX && kinds[0] == 0);
+    CHECK(kinds[KTW_KIND_AWS_ACCESS_KEY] == keys && kinds[KTW_KIND_GITHUB_TOKEN] == keys &&
+          kinds[KTW_KIND_SLACK_TOKEN] == keys);
+    CHECK(sink.n == 4 * keys);
     for (chunk = 1; data != NULL && chunk <= 4096; chunk++) {
         CHECK(scan_chunked(c, NULL, data, len, chunk, 0, &sink2) == KTW_OK);
         bad += !same_findings(&sink, &sink2);
@@ -772,6 +781,9 @@ static void test_m5(const ktw_catalog_t *c)
         CHECK(scan_chunked(c, NULL, data, len, 0, seed, &sink2) == KTW_OK);
         bad += !same_findings(&sink, &sink2);
     }
+    printf("m5: %zu keys and %zu tokens in %zu bytes, cut in pieces of 1 to 4096 bytes and of 200 random"
+           " sizes: %zu differences\n",
+           keys, 3 * keys, len, bad);
     CHECK(bad == 0);
     if (data != NULL)
         test_feed_does_not_allocate(data, len);
