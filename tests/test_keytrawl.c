@@ -461,8 +461,10 @@ static void test_pem_baits(const ktw_catalog_t *c)
 static unsigned char *load_key(const char *file, size_t *len)
 {
     char path[512];
+    int n = snprintf(path, sizeof(path), "%s/keys/%s", KTW_TEST_DATA, file);
 
-    snprintf(path, sizeof(path), "%s/keys/%s", KTW_TEST_DATA, file);
+    if (n < 0 || (size_t)n >= sizeof(path))
+        return NULL;
     return read_file(path, len);
 }
 
