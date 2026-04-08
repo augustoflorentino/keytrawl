@@ -54,9 +54,9 @@ Complete programs: [`examples/basic.c`](examples/basic.c) and the command-line s
 
 ```
 $ keytrawl creds
-creds	20	20	0	aws-access-key-id	likely	none	AKIA…MPLE
+creds	20	20	0	aws-access-key-id	likely	none	-	AKIA…MPLE
 $ keytrawl -a /usr/lib/libgnutls.so.30.42.0
-/usr/lib/libgnutls.so.30.42.0	1714080	155	0	pem-pkcs8-private-key	indicator	ed448	-----BEGIN PRIVATE KEY----- (155 bytes)
+/usr/lib/libgnutls.so.30.42.0	1714080	155	0	pem-pkcs8-private-key	indicator	ed448	binary	-----BEGIN PRIVATE KEY----- (155 bytes)
 ...
 ```
 

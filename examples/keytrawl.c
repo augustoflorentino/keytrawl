@@ -22,6 +22,13 @@ static const char *confidence_name(int confidence)
     }
 }
 
+static const char *flags_name(unsigned flags)
+{
+    static const char *const names[] = {"-", "encrypted", "binary", "encrypted,binary"};
+
+    return names[flags & (KTW_FLAG_ENCRYPTED | KTW_FLAG_IN_BINARY)];
+}
+
 static int print_finding(void *ctx, const ktw_finding_t *f)
 {
     report_t *r = ctx;
@@ -29,10 +36,10 @@ static int print_finding(void *ctx, const ktw_finding_t *f)
     if (!r->all && ktw_finding_confidence(f) == KTW_INDICATOR)
         return 0;
     r->count++;
-    printf("%s\t%llu\t%llu\t%llu\t%s\t%s\t%s\t%s\n", r->file, (unsigned long long)ktw_finding_offset(f),
+    printf("%s\t%llu\t%llu\t%llu\t%s\t%s\t%s\t%s\t%s\n", r->file, (unsigned long long)ktw_finding_offset(f),
            (unsigned long long)ktw_finding_length(f), (unsigned long long)ktw_finding_line(f),
            ktw_finding_name(f), confidence_name(ktw_finding_confidence(f)),
-           ktw_algorithm_name(ktw_finding_algorithm(f)), ktw_finding_evidence(f));
+           ktw_algorithm_name(ktw_finding_algorithm(f)), flags_name(ktw_finding_flags(f)), ktw_finding_evidence(f));
     return 0;
 }
 
