@@ -20,6 +20,7 @@
 #define KTW_DER_DEPTH 4
 #define KTW_EVIDENCE_MAX 256
 #define KTW_CAPTURE 64
+#define KTW_DSA_P_MAX 384
 
 enum { KTW_H_PEM = 1, KTW_H_DER, KTW_H_TOKEN, KTW_H_USER };
 enum { KTW_SCHEMA_TRAD = 1, KTW_SCHEMA_SEC1, KTW_SCHEMA_PKCS8, KTW_SCHEMA_EPKI };
@@ -287,6 +288,20 @@ KTW_INTERNAL int ktw_tok_spawn(ktw_scanner_t *s, const ktw_pattern_t *p, uint64_
 KTW_INTERNAL int ktw_tok_step(ktw_scanner_t *s, unsigned char b);
 KTW_INTERNAL int ktw_tok_finish(ktw_scanner_t *s);
 KTW_INTERNAL uint32_t ktw_crc32_update(uint32_t crc, unsigned char b);
+
+typedef struct {
+    uint32_t h[8];
+    uint64_t n;
+    unsigned char buf[64];
+} ktw_sha256_t;
+
+KTW_INTERNAL void ktw_sha256_init(ktw_sha256_t *c);
+KTW_INTERNAL void ktw_sha256_byte(ktw_sha256_t *c, unsigned char b);
+KTW_INTERNAL void ktw_sha256_final(ktw_sha256_t *c, unsigned char out[32]);
+KTW_INTERNAL void ktw_sha512_short(const unsigned char *data, size_t len, unsigned char out[64]);
+KTW_INTERNAL void ktw_ed25519_public(const unsigned char seed[32], unsigned char out[32]);
+KTW_INTERNAL int ktw_dsa_public(const unsigned char *p, size_t p_len, const unsigned char *g, size_t g_len,
+                                const unsigned char *x, size_t x_len, unsigned char *out, size_t *out_len);
 
 KTW_INTERNAL void ktw_cfg_reset(ktw_cfg_t *c, int mode);
 KTW_INTERNAL int ktw_cfg_step(ktw_scanner_t *s, unsigned char b);
