@@ -1,11 +1,19 @@
 #include "ktw_internal.h"
 
+#include <stddef.h>
 #include <stdio.h>
 
 enum { KTW_DP_TAG, KTW_DP_LEN, KTW_DP_LENX, KTW_DP_CONTENT };
 enum { KTW_ACT_FAIL, KTW_ACT_DESCEND, KTW_ACT_SKIP };
 
 enum { KTW_IN_NONE, KTW_IN_RSA, KTW_IN_SEC1, KTW_IN_INT, KTW_IN_RAW };
+
+enum { KTW_HT_NONE, KTW_HT_A, KTW_HT_B, KTW_HT_Q, KTW_HT_P, KTW_HT_G, KTW_HT_X, KTW_HT_SEED };
+#define KTW_GOT_A 0x01u
+#define KTW_GOT_B 0x02u
+#define KTW_GOT_P 0x04u
+#define KTW_GOT_G 0x08u
+#define KTW_GOT_X 0x10u
 
 #define KTW_BARE_MIN 32u
 #define KTW_BARE_MAX 65536u
@@ -29,7 +37,7 @@ static const ktw_oid_t ktw_key_oids[] = {
 
 void ktw_der_init(ktw_der_t *d, int schema, int bare)
 {
-    memset(d, 0, sizeof(*d));
+    memset(d, 0, offsetof(ktw_der_t, plen));
     d->schema = (uint8_t)schema;
     d->bare = (uint8_t)bare;
     d->phase = KTW_DP_TAG;
@@ -137,6 +145,8 @@ static int ktw_der_header_l2(const ktw_der_t *d, int schema, unsigned idx)
     case KTW_SCHEMA_PKCS8:
         if (idx == 0)
             return t == 0x06 ? KTW_ACT_SKIP : KTW_ACT_FAIL;
+        if (idx == 1 && t == 0x30 && d->alg == KTW_ALG_DSA)
+            return KTW_ACT_DESCEND;
         return idx == 1 ? KTW_ACT_SKIP : KTW_ACT_FAIL;
     case KTW_SCHEMA_EPKI:
         return t == (idx == 0 ? 0x06 : 0x30) && idx < 2 ? KTW_ACT_SKIP : KTW_ACT_FAIL;
@@ -274,6 +284,8 @@ static int ktw_der_close(ktw_der_t *d, unsigned level)
     }
     if (schema == KTW_SCHEMA_SEC1)
         return n == 1;
+    if (rel == 3)
+        return n == 3;
     return schema == KTW_SCHEMA_PKCS8 ? n >= 1 : n == 2;
 }
 
@@ -287,7 +299,92 @@ static int ktw_der_header_act(ktw_der_t *d, unsigned level, unsigned idx)
     schema = ktw_der_rules(d, level, &rel);
     if (rel == 1)
         return ktw_der_header_l1(d, schema, idx);
+    if (rel == 3)
+        return d->tag == 0x02 && idx < 3 ? KTW_ACT_SKIP : KTW_ACT_FAIL;
     return rel == 2 ? ktw_der_header_l2(d, schema, idx) : KTW_ACT_FAIL;
+}
+
+static uint8_t ktw_der_target(const ktw_der_t *d, unsigned level, unsigned idx)
+{
+    unsigned rel;
+    int schema;
+
+    if (d->inner != KTW_IN_NONE && level == 2) {
+        if (d->inner == KTW_IN_INT)
+            return KTW_HT_X;
+        return d->inner == KTW_IN_RAW && d->alg == KTW_ALG_ED25519 ? KTW_HT_SEED : KTW_HT_NONE;
+    }
+    schema = ktw_der_rules(d, level, &rel);
+    if (schema == KTW_SCHEMA_TRAD && rel == 1 && (idx == 1 || idx == 4))
+        return idx == 1 ? KTW_HT_A : KTW_HT_B;
+    if (schema == KTW_SCHEMA_SEC1 && rel == 2 && d->ctag[level - 1] == 0xA1)
+        return KTW_HT_Q;
+    if (schema == KTW_SCHEMA_PKCS8 && rel == 3 && (idx == 0 || idx == 2))
+        return idx == 0 ? KTW_HT_P : KTW_HT_G;
+    return KTW_HT_NONE;
+}
+
+static void ktw_der_target_start(ktw_der_t *d, unsigned level, unsigned idx)
+{
+    d->hash = ktw_der_target(d, level, idx);
+    switch (d->hash) {
+    case KTW_HT_A:
+    case KTW_HT_Q:
+        ktw_sha256_init(&d->ha);
+        d->got |= KTW_GOT_A;
+        break;
+    case KTW_HT_B:
+        ktw_sha256_init(&d->hb);
+        d->got |= KTW_GOT_B;
+        break;
+    case KTW_HT_P:
+        d->plen = 0;
+        d->got |= KTW_GOT_P;
+        break;
+    case KTW_HT_G:
+        d->glen = 0;
+        d->got |= KTW_GOT_G;
+        break;
+    case KTW_HT_X:
+    case KTW_HT_SEED:
+        d->xlen = 0;
+        d->got |= KTW_GOT_X;
+        break;
+    default:
+        break;
+    }
+}
+
+static void ktw_der_keep(ktw_der_t *d, unsigned char b)
+{
+    unsigned char *buf = d->kx;
+    uint16_t *n = &d->xlen;
+    size_t cap = KTW_DSA_X_MAX;
+
+    if (d->hash == KTW_HT_P || d->hash == KTW_HT_G) {
+        buf = d->hash == KTW_HT_P ? d->kp : d->kg;
+        n = d->hash == KTW_HT_P ? &d->plen : &d->glen;
+        cap = KTW_DSA_P_MAX;
+    }
+    if (*n >= cap) {
+        d->idbad = 1;
+        return;
+    }
+    buf[(*n)++] = b;
+}
+
+static void ktw_der_absorb(ktw_der_t *d, unsigned char b)
+{
+    int first = d->left == d->clen;
+
+    if (first && (d->hash == KTW_HT_Q || (b == 0 && d->clen > 1 && d->hash != KTW_HT_SEED)))
+        return;
+    if (d->hash == KTW_HT_A || d->hash == KTW_HT_Q)
+        ktw_sha256_byte(&d->ha, b);
+    else if (d->hash == KTW_HT_B)
+        ktw_sha256_byte(&d->hb, b);
+    else
+        ktw_der_keep(d, b);
 }
 
 static void ktw_der_header(ktw_der_t *d)
@@ -323,6 +420,7 @@ static void ktw_der_header(ktw_der_t *d)
     d->clen = d->left = d->len;
     d->caplen = 0;
     d->phase = KTW_DP_CONTENT;
+    ktw_der_target_start(d, level, idx);
 }
 
 static void ktw_der_prim_end(ktw_der_t *d)
@@ -334,7 +432,10 @@ static void ktw_der_prim_end(ktw_der_t *d)
         ok = ktw_der_prim_wrap(d);
     } else {
         schema = ktw_der_rules(d, level, &rel);
-        ok = rel == 1 ? ktw_der_prim_l1(d, schema, idx) : ktw_der_prim_l2(d, schema, idx);
+        if (rel == 3)
+            ok = ktw_der_int_ok(d);
+        else
+            ok = rel == 1 ? ktw_der_prim_l1(d, schema, idx) : ktw_der_prim_l2(d, schema, idx);
     }
 
     d->phase = KTW_DP_TAG;
@@ -412,12 +513,88 @@ void ktw_der_put(ktw_der_t *d, unsigned char b)
     default:
         if (d->caplen < sizeof(d->cap))
             d->cap[d->caplen++] = b;
+        if (d->hash != KTW_HT_NONE)
+            ktw_der_absorb(d, b);
         d->last = b;
         if (--d->left == 0)
             ktw_der_prim_end(d);
         break;
     }
     ktw_der_closing(d);
+}
+
+static int ktw_der_sha(ktw_sha256_t *c, int have, unsigned char out[32])
+{
+    if (have)
+        ktw_sha256_final(c, out);
+    return have;
+}
+
+static int ktw_der_bytes(const unsigned char *v, size_t n, unsigned char out[32])
+{
+    ktw_sha256_t c;
+
+    while (n > 1 && *v == 0) {
+        v++;
+        n--;
+    }
+    ktw_sha256_init(&c);
+    while (n-- > 0)
+        ktw_sha256_byte(&c, *v++);
+    ktw_sha256_final(&c, out);
+    return 1;
+}
+
+static int ktw_der_pkcs8_identity(ktw_der_t *d, int *alg, unsigned char out[32])
+{
+    unsigned char y[KTW_DSA_P_MAX];
+    size_t ylen;
+
+    switch (d->alg) {
+    case KTW_ALG_RSA:
+    case KTW_ALG_RSA_PSS:
+        *alg = KTW_ALG_RSA;
+        return ktw_der_sha(&d->ha, d->got & KTW_GOT_A, out);
+    case KTW_ALG_EC:
+        *alg = KTW_ALG_EC;
+        return ktw_der_sha(&d->ha, d->got & KTW_GOT_A, out);
+    case KTW_ALG_ED25519:
+        if (!(d->got & KTW_GOT_X) || d->xlen != 32)
+            return 0;
+        *alg = KTW_ALG_ED25519;
+        ktw_ed25519_public(d->kx, y);
+        return ktw_der_bytes(y, 32, out);
+    case KTW_ALG_DSA:
+        if ((d->got & (KTW_GOT_P | KTW_GOT_G | KTW_GOT_X)) != (KTW_GOT_P | KTW_GOT_G | KTW_GOT_X))
+            return 0;
+        if (!ktw_dsa_public(d->kp, d->plen, d->kg, d->glen, d->kx, d->xlen, y, &ylen))
+            return 0;
+        *alg = KTW_ALG_DSA;
+        return ktw_der_bytes(y, ylen, out);
+    default:
+        return 0;
+    }
+}
+
+int ktw_der_identity(ktw_der_t *d, int *alg, unsigned char out[32])
+{
+    if (d->failed || !d->done || d->idbad)
+        return 0;
+    switch (ktw_der_kind(d)) {
+    case KTW_KIND_DER_RSA:
+        *alg = KTW_ALG_RSA;
+        return ktw_der_sha(&d->ha, d->got & KTW_GOT_A, out);
+    case KTW_KIND_DER_DSA:
+        *alg = KTW_ALG_DSA;
+        return ktw_der_sha(&d->hb, d->got & KTW_GOT_B, out);
+    case KTW_KIND_DER_EC:
+        *alg = KTW_ALG_EC;
+        return ktw_der_sha(&d->ha, d->got & KTW_GOT_A, out);
+    case KTW_KIND_DER_PKCS8:
+        return ktw_der_pkcs8_identity(d, alg, out);
+    default:
+        return 0;
+    }
 }
 
 static uint64_t ktw_derslot_end(const ktw_derslot_t *w)
@@ -437,9 +614,16 @@ static int ktw_der_report(ktw_scanner_t *s, ktw_derslot_t *w)
     unsigned checks = KTW_CHECK_STRUCTURE | (w->der.aligned ? KTW_CHECK_ALIGNED : 0);
     unsigned flags = kind == KTW_KIND_DER_PKCS8_ENCRYPTED ? KTW_FLAG_ENCRYPTED : 0;
 
+    unsigned char id[32];
+    int idalg;
+
     snprintf(s->finding.evidence, sizeof(s->finding.evidence), "DER %s (%llu bytes)", ktw_kind_name(kind),
              (unsigned long long)(w->end - w->start));
-    return ktw_emit(s, kind, NULL, w->der.alg, KTW_CONFIRMED, checks, flags, w->start, w->end - w->start, 0);
+    if (ktw_emit(s, kind, NULL, w->der.alg, KTW_CONFIRMED, checks, flags, w->start, w->end - w->start, 0))
+        return 1;
+    if (!(s->cat->groups & KTW_GROUP_PAIRS) || !ktw_der_identity(&w->der, &idalg, id))
+        return 0;
+    return ktw_pair_add(s, 0, idalg, id, kind, 0, w->start, w->end - w->start);
 }
 
 static int ktw_der_resolve(ktw_scanner_t *s)

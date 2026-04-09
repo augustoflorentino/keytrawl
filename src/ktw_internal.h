@@ -21,8 +21,11 @@
 #define KTW_EVIDENCE_MAX 256
 #define KTW_CAPTURE 64
 #define KTW_DSA_P_MAX 384
+#define KTW_DSA_X_MAX 32
+#define KTW_PUB_SLOTS 4
+#define KTW_IDENTS 32
 
-enum { KTW_H_PEM = 1, KTW_H_DER, KTW_H_TOKEN, KTW_H_USER };
+enum { KTW_H_PEM = 1, KTW_H_DER, KTW_H_TOKEN, KTW_H_USER, KTW_H_SPKI, KTW_H_SSHPUB };
 enum { KTW_SCHEMA_TRAD = 1, KTW_SCHEMA_SEC1, KTW_SCHEMA_PKCS8, KTW_SCHEMA_EPKI };
 enum { KTW_TOK_AWS = 1, KTW_TOK_GOOGLE, KTW_TOK_GITHUB, KTW_TOK_GITHUB_PAT, KTW_TOK_SLACK, KTW_TOK_STRIPE };
 enum { KTW_CFG_NONE = 0, KTW_CFG_WIFI, KTW_CFG_AUTHKEYS };
@@ -75,8 +78,15 @@ struct ktw_finding {
     uint64_t offset;
     uint64_t length;
     uint64_t line;
+    uint64_t pair_offset;
     char evidence[KTW_EVIDENCE_MAX];
 };
+
+typedef struct {
+    uint32_t h[8];
+    uint64_t n;
+    unsigned char buf[64];
+} ktw_sha256_t;
 
 typedef struct {
     uint8_t quad;
@@ -105,6 +115,9 @@ typedef struct {
     uint8_t extra;
     uint8_t inner;
     uint8_t rawlen;
+    uint8_t hash;
+    uint8_t got;
+    uint8_t idbad;
     uint8_t ctag[KTW_DER_DEPTH + 1];
     uint16_t count[KTW_DER_DEPTH + 1];
     unsigned char cap[16];
@@ -114,7 +127,57 @@ typedef struct {
     uint32_t total;
     uint32_t end[KTW_DER_DEPTH + 1];
     uint32_t ilen[9];
+    uint16_t plen;
+    uint16_t glen;
+    uint16_t xlen;
+    ktw_sha256_t ha;
+    ktw_sha256_t hb;
+    unsigned char kp[KTW_DSA_P_MAX];
+    unsigned char kg[KTW_DSA_P_MAX];
+    unsigned char kx[KTW_DSA_X_MAX];
 } ktw_der_t;
+
+typedef struct {
+    uint8_t phase;
+    uint8_t lenn;
+    uint8_t failed;
+    uint8_t alg;
+    uint8_t target;
+    uint8_t mpint;
+    uint8_t fields;
+    uint8_t typelen;
+    uint8_t hashed;
+    uint32_t field;
+    uint32_t len;
+    uint32_t left;
+    char type[40];
+    ktw_sha256_t sha;
+} ktw_pubid_t;
+
+typedef struct {
+    uint8_t mode;
+    uint8_t alg;
+    uint8_t step;
+    uint8_t phase;
+    uint8_t lenleft;
+    uint8_t tag;
+    uint8_t first;
+    uint8_t done;
+    uint8_t failed;
+    uint8_t oidlen;
+    uint8_t ringn;
+    uint8_t prog;
+    uint8_t unused;
+    uint8_t hdr;
+    uint32_t len;
+    uint32_t left;
+    uint32_t pos;
+    uint32_t params;
+    uint32_t bits_end;
+    uint32_t seq_end;
+    unsigned char ring[20];
+    ktw_sha256_t sha;
+} ktw_spki_t;
 
 typedef struct {
     uint8_t mode;
@@ -133,6 +196,7 @@ typedef struct {
     unsigned char cap[48];
     char cipher[33];
     char type[48];
+    ktw_pubid_t id;
 } ktw_ssh_t;
 
 typedef struct {
@@ -148,7 +212,7 @@ typedef struct {
     uint8_t line_cr;
     uint8_t hdrlen;
     uint8_t ohn;
-    uint8_t ok;
+    uint16_t ok;
     uint8_t short_body;
     uint32_t idx;
     uint32_t nfull;
@@ -160,6 +224,7 @@ typedef struct {
     ktw_b64_t b64;
     ktw_der_t der;
     ktw_ssh_t ssh;
+    ktw_spki_t spki;
 } ktw_pem_t;
 
 typedef struct {
@@ -169,6 +234,27 @@ typedef struct {
     uint64_t end;
     ktw_der_t der;
 } ktw_derslot_t;
+
+typedef struct {
+    uint8_t used;
+    uint8_t handler;
+    uint64_t start;
+    uint64_t run;
+    ktw_spki_t spki;
+    ktw_b64_t b64;
+    ktw_ssh_t ssh;
+} ktw_pubslot_t;
+
+typedef struct {
+    uint8_t used;
+    uint8_t pub;
+    uint8_t alg;
+    uint8_t encrypted;
+    int kind;
+    uint64_t start;
+    uint64_t len;
+    unsigned char digest[32];
+} ktw_ident_t;
 
 typedef struct {
     uint8_t used;
@@ -253,6 +339,10 @@ struct ktw_scanner {
     ktw_derslot_t der[KTW_DER_SLOTS];
     ktw_tok_t tok[KTW_TOK_SLOTS];
     ktw_cfg_t cfg;
+    ktw_pubslot_t pub[KTW_PUB_SLOTS];
+    ktw_ident_t ident[KTW_IDENTS];
+    unsigned ident_next;
+    uint64_t pair_at;
     ktw_finding_t finding;
 };
 
@@ -273,12 +363,27 @@ KTW_INTERNAL int ktw_der_kind(const ktw_der_t *d);
 KTW_INTERNAL int ktw_der_spawn(ktw_scanner_t *s, const ktw_pattern_t *p, uint64_t end);
 KTW_INTERNAL int ktw_der_step(ktw_scanner_t *s, unsigned char b);
 KTW_INTERNAL int ktw_der_finish(ktw_scanner_t *s);
+KTW_INTERNAL int ktw_der_identity(ktw_der_t *d, int *alg, unsigned char out[32]);
 
 enum { KTW_SSH_PRIVATE = 1, KTW_SSH_PUBLIC };
 KTW_INTERNAL void ktw_ssh_init(ktw_ssh_t *h, int mode);
 KTW_INTERNAL void ktw_ssh_put(ktw_ssh_t *h, unsigned char b);
 KTW_INTERNAL int ktw_ssh_valid(const ktw_ssh_t *h);
 KTW_INTERNAL int ktw_ssh_alg(const char *type);
+KTW_INTERNAL void ktw_pubid_init(ktw_pubid_t *id);
+KTW_INTERNAL void ktw_pubid_put(ktw_pubid_t *id, unsigned char b);
+KTW_INTERNAL int ktw_pubid_digest(ktw_pubid_t *id, int *alg, unsigned char out[32]);
+
+enum { KTW_SPKI_FIND = 1, KTW_SPKI_TAIL, KTW_SPKI_PKCS1 };
+enum { KTW_PUB_PEM = 1, KTW_PUB_PEM_RSA, KTW_PUB_CERT, KTW_PUB_DER, KTW_PUB_SSH };
+KTW_INTERNAL void ktw_spki_init(ktw_spki_t *k, int mode);
+KTW_INTERNAL void ktw_spki_put(ktw_spki_t *k, unsigned char b);
+KTW_INTERNAL int ktw_spki_digest(ktw_spki_t *k, int *alg, unsigned char out[32]);
+KTW_INTERNAL int ktw_pair_add(ktw_scanner_t *s, int pub, int alg, const unsigned char digest[32], int kind,
+                              int encrypted, uint64_t start, uint64_t len);
+KTW_INTERNAL int ktw_pub_spawn(ktw_scanner_t *s, const ktw_pattern_t *p, uint64_t end);
+KTW_INTERNAL int ktw_pub_step(ktw_scanner_t *s, unsigned char b);
+KTW_INTERNAL int ktw_pub_finish(ktw_scanner_t *s);
 
 KTW_INTERNAL int ktw_pem_spawn(ktw_scanner_t *s, uint64_t start);
 KTW_INTERNAL int ktw_pem_step(ktw_scanner_t *s, unsigned char b);
@@ -288,12 +393,6 @@ KTW_INTERNAL int ktw_tok_spawn(ktw_scanner_t *s, const ktw_pattern_t *p, uint64_
 KTW_INTERNAL int ktw_tok_step(ktw_scanner_t *s, unsigned char b);
 KTW_INTERNAL int ktw_tok_finish(ktw_scanner_t *s);
 KTW_INTERNAL uint32_t ktw_crc32_update(uint32_t crc, unsigned char b);
-
-typedef struct {
-    uint32_t h[8];
-    uint64_t n;
-    unsigned char buf[64];
-} ktw_sha256_t;
 
 KTW_INTERNAL void ktw_sha256_init(ktw_sha256_t *c);
 KTW_INTERNAL void ktw_sha256_byte(ktw_sha256_t *c, unsigned char b);

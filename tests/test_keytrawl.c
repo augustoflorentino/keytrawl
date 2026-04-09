@@ -30,6 +30,7 @@ typedef struct {
     unsigned long long offset;
     unsigned long long length;
     unsigned long long line;
+    unsigned long long pair_offset;
     char name[64];
     char evidence[256];
 } rec_t;
@@ -60,6 +61,7 @@ static int collect(void *ctx, const ktw_finding_t *f)
         r->offset = (unsigned long long)ktw_finding_offset(f);
         r->length = (unsigned long long)ktw_finding_length(f);
         r->line = (unsigned long long)ktw_finding_line(f);
+        r->pair_offset = (unsigned long long)ktw_finding_pair_offset(f);
         snprintf(r->name, sizeof(r->name), "%s", ktw_finding_name(f));
         snprintf(r->evidence, sizeof(r->evidence), "%s", ktw_finding_evidence(f));
     }
@@ -166,7 +168,7 @@ static int evidence_ok(const unsigned char *data, const rec_t *r)
 
     if (r->kind == KTW_KIND_AUTHORIZED_KEY)
         return 1;
-    if (r->kind <= KTW_KIND_PEM_PKCS8_ENCRYPTED) {
+    if (r->kind <= KTW_KIND_PEM_PKCS8_ENCRYPTED || (r->kind == KTW_KIND_KEY_PAIR && data[from] == '-')) {
         while (from < to && data[from] != '\n')
             from++;
         while (to > from && data[to - 1] != '\n')
@@ -734,6 +736,123 @@ static int same_findings(const sink_t *a, const sink_t *b)
     return 1;
 }
 
+typedef struct {
+    char priv[96];
+    char pub[96];
+    char alg[16];
+} pair_t;
+
+#define PAIRS_MAX 1024
+
+static size_t load_pairs(pair_t *e)
+{
+    char path[512], line[256];
+    FILE *f;
+    size_t n = 0;
+
+    snprintf(path, sizeof(path), "%s/keys/pub/pairs.tsv", KTW_TEST_DATA);
+    f = fopen(path, "r");
+    if (f == NULL)
+        return 0;
+    while (n < PAIRS_MAX && fgets(line, sizeof(line), f) != NULL)
+        if (sscanf(line, "%95[^\t]\t%95[^\t]\t%15s", e[n].priv, e[n].pub, e[n].alg) == 3)
+            n++;
+    fclose(f);
+    return n;
+}
+
+static size_t stem(const char *pub)
+{
+    const char *base = strrchr(pub, '/'), *dot;
+
+    base = base == NULL ? pub : base + 1;
+    dot = strchr(base, '.');
+    return (size_t)((dot == NULL ? base + strlen(base) : dot) - pub);
+}
+
+static unsigned char *two_in_random(const unsigned char *a, size_t a_len, const unsigned char *b, size_t b_len,
+                                    size_t *at_a, size_t *at_b, size_t *total)
+{
+    size_t r1 = 1 + rng() % 400, r2 = 1 + rng() % 400, r3 = rng() % 400;
+    unsigned char *buf;
+
+    *total = r1 + a_len + r2 + b_len + r3;
+    buf = malloc(*total);
+    if (buf == NULL)
+        return NULL;
+    fill_random(buf, *total);
+    buf[r1 - 1] = buf[r1 + a_len + r2 - 1] = '\n';
+    memcpy(buf + r1, a, a_len);
+    memcpy(buf + r1 + a_len + r2, b, b_len);
+    *at_a = r1;
+    *at_b = r1 + a_len + r2;
+    return buf;
+}
+
+static size_t pairs_found(const ktw_catalog_t *c, const pair_t *e, const unsigned char *priv, size_t priv_len,
+                          const unsigned char *pub, size_t pub_len, int reverse)
+{
+    size_t at_priv, at_pub, total, i, n = 0;
+    unsigned char *buf = reverse ? two_in_random(pub, pub_len, priv, priv_len, &at_pub, &at_priv, &total)
+                                 : two_in_random(priv, priv_len, pub, pub_len, &at_priv, &at_pub, &total);
+
+    if (buf == NULL)
+        return 0;
+    CHECK(scan_chunked(c, NULL, buf, total, 0, rng(), &sink) == KTW_OK);
+    CHECK(scan_chunked(c, NULL, buf, total, total, 0, &sink2) == KTW_OK && same_findings(&sink, &sink2));
+    for (i = 0; i < sink.n && i < RECS_MAX; i++) {
+        const rec_t *r = &sink.recs[i];
+
+        if (r->kind != KTW_KIND_KEY_PAIR) {
+            CHECK(r->pair_offset == 0);
+            continue;
+        }
+        n++;
+        CHECK(r->offset >= at_pub && r->offset + r->length <= at_pub + pub_len);
+        CHECK(r->pair_offset == at_priv);
+        CHECK(strcmp(ktw_algorithm_name(r->algorithm), e->alg) == 0);
+        CHECK(r->confidence == KTW_CONFIRMED && (r->checks & KTW_CHECK_KEY_MATCH));
+        CHECK(evidence_ok(buf, r));
+    }
+    free(buf);
+    return n;
+}
+
+static void test_pairs(const ktw_catalog_t *c)
+{
+    static pair_t e[PAIRS_MAX];
+    size_t n = load_pairs(e), i, j, ok = 0, wrong = 0, priv_len, pub_len, other_len;
+    char path[128];
+
+    CHECK(n >= 500);
+    for (i = 0; i < n; i++) {
+        unsigned char *priv = load_key(e[i].priv, &priv_len), *pub = load_key(e[i].pub, &pub_len), *other = NULL;
+        size_t got = 0, back = 0;
+
+        for (j = (i + 1) % n; j != i && other == NULL; j = (j + 1) % n)
+            if (strcmp(e[j].alg, e[i].alg) == 0 && strncmp(e[j].pub, e[i].pub, stem(e[i].pub)) != 0) {
+                snprintf(path, sizeof(path), "%s", e[j].pub);
+                other = load_key(path, &other_len);
+            }
+        CHECK(priv != NULL && pub != NULL && other != NULL);
+        if (priv != NULL && pub != NULL) {
+            got = pairs_found(c, &e[i], priv, priv_len, pub, pub_len, 0);
+            back = pairs_found(c, &e[i], priv, priv_len, pub, pub_len, 1);
+        }
+        if (got == 1 && back == 1)
+            ok++;
+        else
+            fprintf(stderr, "pairs: %s with %s: %zu and %zu\n", e[i].priv, e[i].pub, got, back);
+        if (priv != NULL && other != NULL)
+            wrong += pairs_found(c, &e[i], priv, priv_len, other, other_len, rng() & 1);
+        free(priv);
+        free(pub);
+        free(other);
+    }
+    printf("pairs: %zu pairs, %zu found in both orders, %zu false pairs\n", n, ok, wrong);
+    CHECK(ok == n && wrong == 0);
+}
+
 static unsigned char *mixed_stream(size_t *out_len, size_t *out_keys)
 {
     static entry_t entries[ENTRIES_MAX];
@@ -818,6 +937,7 @@ int main(int argc, char **argv)
     test_user_patterns();
     test_dropped();
     test_m2(c, argc > 1 ? argv[1] : argv[0]);
+    test_pairs(c);
     test_m5(c);
     ktw_catalog_destroy(c);
     if (failures != 0) {

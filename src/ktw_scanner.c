@@ -107,6 +107,9 @@ int ktw_scanner_reset(ktw_scanner_t *s, const char *name, size_t name_len)
     memset(s->pem, 0, sizeof(s->pem));
     memset(s->der, 0, sizeof(s->der));
     memset(s->tok, 0, sizeof(s->tok));
+    memset(s->pub, 0, sizeof(s->pub));
+    memset(s->ident, 0, sizeof(s->ident));
+    s->ident_next = 0;
     for (i = 0; i < KTW_TOK_SLOTS; i++)
         s->tok[i].buf = bufs[i];
     s->state = s->cat->root;
@@ -191,7 +194,7 @@ int ktw_emit(ktw_scanner_t *s, int kind, const char *name, int alg, int conf, un
 
     if (ktw_in_binary(s)) {
         flags |= KTW_FLAG_IN_BINARY;
-        if (kind <= KTW_KIND_DER_PKCS8_ENCRYPTED)
+        if (kind <= KTW_KIND_DER_PKCS8_ENCRYPTED || kind == KTW_KIND_KEY_PAIR)
             conf = KTW_INDICATOR;
     }
     f->kind = kind;
@@ -203,6 +206,7 @@ int ktw_emit(ktw_scanner_t *s, int kind, const char *name, int alg, int conf, un
     f->offset = off;
     f->length = len;
     f->line = line;
+    f->pair_offset = kind == KTW_KIND_KEY_PAIR ? s->pair_at : 0;
     if (s->fn != NULL && s->fn(s->fctx, f) != 0)
         s->stopped = 1;
     return s->stopped;
@@ -223,6 +227,8 @@ static void ktw_outputs(ktw_scanner_t *s, unsigned st, uint64_t end)
                 ktw_pem_spawn(s, end + 1 - p->len);
             else if (p->handler == KTW_H_DER)
                 ktw_der_spawn(s, p, end);
+            else if (p->handler == KTW_H_SPKI || p->handler == KTW_H_SSHPUB)
+                ktw_pub_spawn(s, p, end);
             else
                 ktw_tok_spawn(s, p, end);
         }
@@ -236,7 +242,7 @@ static void ktw_slow_byte(ktw_scanner_t *s, unsigned char b, uint64_t abs)
     s->now = abs;
     if (s->cfg.mode != KTW_CFG_NONE && ktw_cfg_step(s, b))
         return;
-    if (s->active != 0 && (ktw_pem_step(s, b) || ktw_der_step(s, b) || ktw_tok_step(s, b)))
+    if (s->active != 0 && (ktw_pem_step(s, b) || ktw_der_step(s, b) || ktw_tok_step(s, b) || ktw_pub_step(s, b)))
         return;
     st = s->cat->table[((size_t)s->state << 8) | b];
     s->state = st;
@@ -324,7 +330,7 @@ int ktw_finish(ktw_scanner_t *s, ktw_finding_fn fn, void *fctx)
     s->base = s->pos;
     s->cur = NULL;
     s->finished = 1;
-    if (ktw_cfg_finish(s) || ktw_tok_finish(s) || ktw_pem_finish(s) || ktw_der_finish(s))
+    if (ktw_cfg_finish(s) || ktw_tok_finish(s) || ktw_pem_finish(s) || ktw_der_finish(s) || ktw_pub_finish(s))
         return KTW_STOPPED;
     return KTW_OK;
 }
@@ -374,6 +380,11 @@ uint64_t ktw_finding_line(const ktw_finding_t *f)
     return f == NULL ? 0 : f->line;
 }
 
+uint64_t ktw_finding_pair_offset(const ktw_finding_t *f)
+{
+    return f == NULL ? 0 : f->pair_offset;
+}
+
 const char *ktw_finding_evidence(const ktw_finding_t *f)
 {
     return f == NULL ? "" : f->evidence;
@@ -399,7 +410,8 @@ const char *ktw_kind_name(int kind)
                                         "slack-token",
                                         "stripe-secret-key",
                                         "wifi-passphrase",
-                                        "authorized-key"};
+                                        "authorized-key",
+                                        "key-pair"};
 
     if (kind >= KTW_KIND_USER)
         return "user";

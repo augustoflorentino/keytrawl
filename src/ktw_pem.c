@@ -17,12 +17,27 @@ enum {
     KTW_PS_END
 };
 
-enum { KTW_L_RSA, KTW_L_EC, KTW_L_DSA, KTW_L_OPENSSH, KTW_L_PKCS8, KTW_L_ENCRYPTED, KTW_L_COUNT };
+enum {
+    KTW_L_RSA,
+    KTW_L_EC,
+    KTW_L_DSA,
+    KTW_L_OPENSSH,
+    KTW_L_PKCS8,
+    KTW_L_ENCRYPTED,
+    KTW_L_PUBLIC,
+    KTW_L_RSA_PUBLIC,
+    KTW_L_CERT,
+    KTW_L_COUNT
+};
 
-static const char *const ktw_labels[KTW_L_COUNT] = {"RSA PRIVATE KEY",     "EC PRIVATE KEY", "DSA PRIVATE KEY",
-                                                    "OPENSSH PRIVATE KEY", "PRIVATE KEY",    "ENCRYPTED PRIVATE KEY"};
-static const int ktw_label_kind[KTW_L_COUNT] = {KTW_KIND_PEM_RSA,     KTW_KIND_PEM_EC,    KTW_KIND_PEM_DSA,
-                                                KTW_KIND_PEM_OPENSSH, KTW_KIND_PEM_PKCS8, KTW_KIND_PEM_PKCS8_ENCRYPTED};
+#define KTW_L_PRIVATE_MASK ((1u << KTW_L_PUBLIC) - 1)
+
+static const char *const ktw_labels[KTW_L_COUNT] = {
+    "RSA PRIVATE KEY", "EC PRIVATE KEY", "DSA PRIVATE KEY", "OPENSSH PRIVATE KEY", "PRIVATE KEY",
+    "ENCRYPTED PRIVATE KEY", "PUBLIC KEY", "RSA PUBLIC KEY", "CERTIFICATE"};
+static const int ktw_label_kind[KTW_L_COUNT] = {
+    KTW_KIND_PEM_RSA, KTW_KIND_PEM_EC,    KTW_KIND_PEM_DSA,   KTW_KIND_PEM_OPENSSH, KTW_KIND_PEM_PKCS8,
+    KTW_KIND_PEM_PKCS8_ENCRYPTED, KTW_PUB_PEM, KTW_PUB_PEM_RSA, KTW_PUB_CERT};
 
 static const char ktw_proc_type[] = "Proc-Type: 4,ENCRYPTED";
 static const uint8_t ktw_proc_fail[22] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0};
@@ -119,7 +134,9 @@ static void ktw_pem_body_init(ktw_pem_t *p)
     p->ohn = 0;
     if (ktw_pem_encrypted(p) && p->label != KTW_L_ENCRYPTED)
         return;
-    if (p->label == KTW_L_OPENSSH)
+    if (p->label >= KTW_L_PUBLIC)
+        ktw_spki_init(&p->spki, p->label == KTW_L_RSA_PUBLIC ? KTW_SPKI_PKCS1 : KTW_SPKI_FIND);
+    else if (p->label == KTW_L_OPENSSH)
         ktw_ssh_init(&p->ssh, KTW_SSH_PRIVATE);
     else if (p->label == KTW_L_RSA || p->label == KTW_L_DSA)
         ktw_der_init(&p->der, KTW_SCHEMA_TRAD, 0);
@@ -141,7 +158,9 @@ static void ktw_pem_decode(ktw_pem_t *p, unsigned char c)
         p->ohdr[p->ohn++] = out;
     if (ktw_pem_encrypted(p) && p->label != KTW_L_ENCRYPTED)
         return;
-    if (p->label == KTW_L_OPENSSH)
+    if (p->label >= KTW_L_PUBLIC)
+        ktw_spki_put(&p->spki, out);
+    else if (p->label == KTW_L_OPENSSH)
         ktw_ssh_put(&p->ssh, out);
     else
         ktw_der_put(&p->der, out);
@@ -175,7 +194,7 @@ static int ktw_pem_label(ktw_pem_t *p, unsigned char c)
         else if (p->idx + 1 == n + 5)
             p->label = (uint8_t)i;
     }
-    p->ok = (uint8_t)mask;
+    p->ok = (uint16_t)mask;
     p->idx++;
     if (mask == 0)
         return 0;
@@ -400,11 +419,40 @@ static int ktw_pem_confidence(const ktw_pem_t *p, unsigned *checks, unsigned *fl
     return (*checks & KTW_CHECK_DER_OUTER) ? KTW_LIKELY : KTW_INDICATOR;
 }
 
+static int ktw_pem_public(ktw_scanner_t *s, ktw_pem_t *p)
+{
+    unsigned char id[32];
+    int alg;
+
+    if (!ktw_b64_valid(&p->b64) || ktw_pem_encrypted(p) || !ktw_spki_digest(&p->spki, &alg, id))
+        return 0;
+    return ktw_pair_add(s, 1, alg, id, ktw_label_kind[p->label], 0, p->start, p->end - p->start);
+}
+
+static int ktw_pem_identity(ktw_scanner_t *s, ktw_pem_t *p, unsigned checks, unsigned flags)
+{
+    unsigned char id[32];
+    int alg, ok;
+
+    if (!(s->cat->groups & KTW_GROUP_PAIRS) || !(checks & KTW_CHECK_STRUCTURE))
+        return 0;
+    if (p->label == KTW_L_OPENSSH)
+        ok = ktw_pubid_digest(&p->ssh.id, &alg, id);
+    else
+        ok = !(flags & KTW_FLAG_ENCRYPTED) && ktw_der_identity(&p->der, &alg, id);
+    if (!ok)
+        return 0;
+    return ktw_pair_add(s, 0, alg, id, ktw_label_kind[p->label], (flags & KTW_FLAG_ENCRYPTED) != 0, p->start,
+                        p->end - p->start);
+}
+
 static int ktw_pem_report(ktw_scanner_t *s, ktw_pem_t *p)
 {
     unsigned checks = 0, flags = 0;
     int alg = KTW_ALG_NONE, conf;
 
+    if (p->label >= KTW_L_PUBLIC)
+        return ktw_pem_public(s, p);
     if (ktw_b64_valid(&p->b64))
         checks |= KTW_CHECK_BASE64;
     if ((checks & KTW_CHECK_BASE64) && ktw_pem_outer(p))
@@ -416,7 +464,9 @@ static int ktw_pem_report(ktw_scanner_t *s, ktw_pem_t *p)
         return 0;
     snprintf(s->finding.evidence, sizeof(s->finding.evidence), "-----BEGIN %s----- (%llu bytes)",
              ktw_labels[p->label], (unsigned long long)(p->end - p->start));
-    return ktw_emit(s, ktw_label_kind[p->label], NULL, alg, conf, checks, flags, p->start, p->end - p->start, 0);
+    if (ktw_emit(s, ktw_label_kind[p->label], NULL, alg, conf, checks, flags, p->start, p->end - p->start, 0))
+        return 1;
+    return ktw_pem_identity(s, p, checks, flags);
 }
 
 static void ktw_pem_free(ktw_scanner_t *s, ktw_pem_t *p)
@@ -462,7 +512,7 @@ int ktw_pem_spawn(ktw_scanner_t *s, uint64_t start)
         p->used = 1;
         p->state = KTW_PS_LABEL;
         p->label = KTW_L_COUNT;
-        p->ok = (1u << KTW_L_COUNT) - 1;
+        p->ok = (uint16_t)((s->cat->groups & KTW_GROUP_PAIRS) ? (1u << KTW_L_COUNT) - 1 : KTW_L_PRIVATE_MASK);
         p->start = start;
         s->active++;
         return 0;

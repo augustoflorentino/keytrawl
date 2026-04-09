@@ -33,7 +33,8 @@ extern "C" {
 #define KTW_GROUP_DER 0x02u
 #define KTW_GROUP_CLOUD 0x04u
 #define KTW_GROUP_CONFIG 0x08u
-#define KTW_GROUP_ALL 0x0Fu
+#define KTW_GROUP_PAIRS 0x10u
+#define KTW_GROUP_ALL 0x1Fu
 
 #define KTW_KIND_PEM_RSA 1
 #define KTW_KIND_PEM_EC 2
@@ -53,6 +54,7 @@ extern "C" {
 #define KTW_KIND_STRIPE_KEY 16
 #define KTW_KIND_WIFI_PASSPHRASE 17
 #define KTW_KIND_AUTHORIZED_KEY 18
+#define KTW_KIND_KEY_PAIR 19
 #define KTW_KIND_USER 1024
 
 #define KTW_ALG_NONE 0
@@ -79,6 +81,7 @@ extern "C" {
 #define KTW_CHECK_CONTEXT 0x0040u
 #define KTW_CHECK_ALIGNED 0x0080u
 #define KTW_CHECK_VALIDATOR 0x0100u
+#define KTW_CHECK_KEY_MATCH 0x0200u
 
 #define KTW_FLAG_ENCRYPTED 0x01u
 #define KTW_FLAG_IN_BINARY 0x02u
@@ -129,6 +132,7 @@ KTW_API unsigned ktw_finding_flags(const ktw_finding_t *finding);
 KTW_API uint64_t ktw_finding_offset(const ktw_finding_t *finding);
 KTW_API uint64_t ktw_finding_length(const ktw_finding_t *finding);
 KTW_API uint64_t ktw_finding_line(const ktw_finding_t *finding);
+KTW_API uint64_t ktw_finding_pair_offset(const ktw_finding_t *finding);
 KTW_API const char *ktw_finding_evidence(const ktw_finding_t *finding);
 
 KTW_API const char *ktw_kind_name(int kind);

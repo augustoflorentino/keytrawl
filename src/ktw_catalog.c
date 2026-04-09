@@ -33,6 +33,15 @@ static const ktw_builtin_t ktw_builtins[] = {
     {KTW_GROUP_CLOUD, KTW_H_TOKEN, KTW_TOK_SLACK, 5, "xoxr-"},
     {KTW_GROUP_CLOUD, KTW_H_TOKEN, KTW_TOK_SLACK, 5, "xoxs-"},
     {KTW_GROUP_CLOUD, KTW_H_TOKEN, KTW_TOK_STRIPE, 8, "sk_live_"},
+    {KTW_GROUP_PAIRS, KTW_H_SPKI, 0, 11, "\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01"},
+    {KTW_GROUP_PAIRS, KTW_H_SPKI, 1, 11, "\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x0a"},
+    {KTW_GROUP_PAIRS, KTW_H_SPKI, 2, 9, "\x06\x07\x2a\x86\x48\xce\x3d\x02\x01"},
+    {KTW_GROUP_PAIRS, KTW_H_SPKI, 3, 9, "\x06\x07\x2a\x86\x48\xce\x38\x04\x01"},
+    {KTW_GROUP_PAIRS, KTW_H_SPKI, 4, 5, "\x06\x03\x2b\x65\x70"},
+    {KTW_GROUP_PAIRS, KTW_H_SSHPUB, 0, 14, "AAAAB3NzaC1yc2"},
+    {KTW_GROUP_PAIRS, KTW_H_SSHPUB, 0, 14, "AAAAB3NzaC1kc3"},
+    {KTW_GROUP_PAIRS, KTW_H_SSHPUB, 0, 20, "AAAAC3NzaC1lZDI1NTE5"},
+    {KTW_GROUP_PAIRS, KTW_H_SSHPUB, 0, 27, "AAAAE2VjZHNhLXNoYTItbmlzdHA"},
 };
 
 #define KTW_NBUILTINS (sizeof(ktw_builtins) / sizeof(ktw_builtins[0]))
