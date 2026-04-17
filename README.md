@@ -22,11 +22,18 @@ when its structure checks out; what is only shaped like a secret is reported as 
 | Stripe `sk_live_` | length and alphabet ([API keys](https://docs.stripe.com/keys)) | likely |
 | Wi-Fi passphrase | in `/etc/config/wireless`, `hostapd*.conf`, `wpa_supplicant*.conf`: `option key`, `wpa_passphrase`, `psk` | likely |
 | `authorized_keys` line | key type, base64 and the SSH wire format of the public key | confirmed when valid, indicator otherwise |
+| Key pairs: a public key whose private key is in the same stream | the public value (RSA n, DSA y, EC point, Ed25519 key) of PEM `PUBLIC KEY`, `RSA PUBLIC KEY`, `CERTIFICATE`, DER SubjectPublicKeyInfo and OpenSSH lines, equal to that of a private key; computed from PKCS#8 Ed25519 and DSA keys, which do not carry it | confirmed |
 | Your own literals | your validator callback decides | yours |
 
 Private keys inside an executable (ELF, or a `.so` in the stream name) are reported as indicators
 with `KTW_FLAG_IN_BINARY`: those are almost always test vectors. Encrypted keys carry
 `KTW_FLAG_ENCRYPTED`. keytrawl never decrypts anything and never touches the network.
+
+A key pair is the sign of a factory key: every unit ships the same private key, and the public
+half shows what it is used for. The finding points at the public key, and
+`ktw_finding_pair_offset` at the private one. The scanner remembers the last 32 keys of a stream;
+a pair farther apart than that is not seen. Encrypted PKCS#8 and legacy encrypted PEM keys cannot
+be paired; encrypted OpenSSH keys can, since their public key is in clear.
 
 The evidence never holds the secret: at most its first 4 and last 4 bytes (`AKIA…MPLE`).
 
@@ -67,22 +74,23 @@ Conventions:
 - what `ktw_x_create` returns is released only by `ktw_x_destroy`, which accepts `NULL`
 - functions never take ownership of their arguments; returned pointers belong to the library
 - pass your own allocator to the create functions, or `NULL` for `malloc`/`free`
-- `ktw_feed` and `ktw_finish` never allocate; a scanner holds about 4 KB whatever the input size
+- `ktw_feed` and `ktw_finish` never allocate; a scanner holds about 22 KB whatever the input size
 
 ## Numbers
 
-Measured on 2026-03-24, AMD Ryzen 7 5700G, GCC 16.2, release build, on a machine busy with other
-work. Every number has a script.
+Measured for 0.2.0 on 2026-04-17, AMD Ryzen 7 5700G, GCC 16.2, release build. Every number has
+a script.
 
 | Measure | Result | Script |
 |---|---|---|
-| One thread, random bytes | 1065 MB/s | `bench/bench.c` |
-| One thread, `/usr/lib` concatenated | 1042 MB/s | `bench/bench.c file` |
-| Four threads, one catalog | 3.94x one thread by CPU time | `bench/bench.c` |
-| fwtriage's Python scan on the same bytes | 33 to 53 MB/s; keytrawl is 11x to 21x faster | `bench/python_bench.py` |
-| 1 GB of `-----BEGIN ` | linear (4.07x the time of 256 MB), 0 allocations | `bench/bench.c` |
-| False positives in `/usr/bin` and `/usr/lib` (14 GB) and 3 OpenWrt rootfs | 0 false confirmed; 0.46 false indications per 100 MB, all documentation examples of AWS keys | `scripts/scan_tree.sh`, reviewed by hand |
-| Line coverage of `src/` by the tests | 95% | `scripts/coverage.sh` |
+| One thread, random bytes | 1251 to 1341 MB/s | `bench/bench.c` |
+| One thread, the shared libraries of `/usr/lib` concatenated (256 MB) | 1682 to 1883 MB/s | `bench/bench.c file` |
+| Four threads, one catalog | 4.67x one thread on random bytes, 3.44x to 3.60x on the libraries | `bench/bench.c` |
+| fwtriage's Python scan on the same bytes (measured for 0.1.0) | 33 to 53 MB/s; keytrawl is 11x to 21x faster | `bench/python_bench.py` |
+| 1 GB of `-----BEGIN ` | linear (3.82x the time of 256 MB), 0 allocations | `bench/bench.c` |
+| False positives in `/usr/bin` and `/usr/lib` (14 GB) | 0 false confirmed; 65 false indications (0.46 per 100 MB), all documentation examples of AWS keys; 15 key pairs, all real | `scripts/scan_tree.sh`, reviewed by hand |
+| Key pairs of the test keys, 600 private and public combinations | 600 found in either order, 0 false pairs | `tests/test_keytrawl.c` |
+| Line coverage of `src/` by the tests | 94% | `scripts/coverage.sh` |
 
 ## Build and install
 

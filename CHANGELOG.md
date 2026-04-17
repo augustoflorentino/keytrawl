@@ -4,7 +4,7 @@ Each release lists what changed, what updating means for existing code, and ever
 
 ## Unreleased
 
-## 0.2.0 - unreleased
+## 0.2.0 - 2026-04-17
 
 Key pairs (K10): a public key whose private key is in the same stream, the sign of a factory key
 shared by every unit.
@@ -19,7 +19,8 @@ shared by every unit.
   legacy encrypted PEM keys cannot be matched; encrypted OpenSSH keys can, their public key is in
   clear.
 - PKCS#8 DSA keys now have their parameters checked as p, q, g.
-- A scanner holds about 18 KB, was 4 KB; still no allocation while scanning.
+- A scanner holds about 22 KB, was 4 KB; still no allocation while scanning. It remembers the last
+  32 keys of a stream for pairing.
 
 Updating: code that passes `KTW_GROUP_ALL` gets the new findings once rebuilt; code that lists the
 kinds it knows must expect kind 19.
