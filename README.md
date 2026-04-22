@@ -1,5 +1,12 @@
 # keytrawl
 
+<p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/findings-dark.svg">
+    <img src="docs/images/findings-light.svg" alt="keytrawl output: a private key and its certificate in a firmware image, a Wi-Fi passphrase, an authorized key, AWS and GitHub tokens, an encrypted key, and test vectors inside libgnutls" width="1000">
+  </picture>
+</p>
+
 Streaming secret finder for raw bytes: private keys, cloud tokens and configuration secrets, each
 validated before it is reported.
 
