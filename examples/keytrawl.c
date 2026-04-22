@@ -7,6 +7,7 @@
 typedef struct {
     const char *file;
     int all;
+    unsigned stream;
     unsigned long count;
 } report_t;
 
@@ -46,7 +47,7 @@ static int print_finding(void *ctx, const ktw_finding_t *f)
 static int scan_stream(ktw_scanner_t *scanner, FILE *in, unsigned char *buf, size_t chunk, report_t *r)
 {
     size_t got;
-    int status = ktw_scanner_reset(scanner, r->file, strlen(r->file));
+    int status = ktw_scanner_reset(scanner, r->file, strlen(r->file), r->stream);
 
     while (status == KTW_OK && (got = fread(buf, 1, chunk, in)) > 0)
         status = ktw_feed(scanner, buf, got, print_finding, r);
@@ -84,7 +85,7 @@ static int scan_path(ktw_scanner_t *scanner, const char *path, unsigned char *bu
 
 static int usage(void)
 {
-    fprintf(stderr, "usage: keytrawl [-c chunk] [-a] [file...]\n");
+    fprintf(stderr, "usage: keytrawl [-c chunk] [-a] [-b] [file...]\n");
     return 2;
 }
 
@@ -93,7 +94,7 @@ int main(int argc, char **argv)
     static char *stdin_only[] = {"-"};
     ktw_catalog_t *catalog = NULL;
     ktw_scanner_t *scanner = NULL;
-    report_t report = {NULL, 0, 0};
+    report_t report = {NULL, 0, KTW_STREAM_AUTO, 0};
     unsigned char *buf;
     size_t chunk = 65536;
     int i = 1, failed = 0, status;
@@ -101,6 +102,8 @@ int main(int argc, char **argv)
     for (; i < argc && argv[i][0] == '-' && argv[i][1] != '\0'; i++) {
         if (strcmp(argv[i], "-a") == 0)
             report.all = 1;
+        else if (strcmp(argv[i], "-b") == 0)
+            report.stream = KTW_STREAM_BINARY;
         else if (strcmp(argv[i], "-c") == 0 && i + 1 < argc && atol(argv[i + 1]) > 0)
             chunk = (size_t)atol(argv[++i]);
         else

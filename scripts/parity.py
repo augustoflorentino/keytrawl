@@ -62,7 +62,8 @@ class Lib:
 
         callback = self.callback_type(on_finding)
         name = path.encode()
-        assert lib.ktw_scanner_reset(self.scanner, name, ctypes.c_size_t(len(name))) == 0
+        stream = 1 if ".so" in path else 0  # KTW_STREAM_BINARY where fwtriage takes a library by its name
+        assert lib.ktw_scanner_reset(self.scanner, name, ctypes.c_size_t(len(name)), ctypes.c_uint(stream)) == 0
         assert lib.ktw_feed(self.scanner, data, ctypes.c_size_t(len(data)), callback, None) == 0
         assert lib.ktw_finish(self.scanner, callback, None) == 0
         return found

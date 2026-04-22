@@ -80,8 +80,8 @@ static ktw_catalog_t *catalog_all(void)
     return c;
 }
 
-static int scan_chunked(const ktw_catalog_t *c, const char *name, const unsigned char *data, size_t len,
-                        size_t chunk, unsigned seed, sink_t *k)
+static int scan_as(const ktw_catalog_t *c, const char *name, unsigned stream, const unsigned char *data,
+                   size_t len, size_t chunk, unsigned seed, sink_t *k)
 {
     ktw_scanner_t *s = NULL;
     size_t at = 0;
@@ -89,7 +89,7 @@ static int scan_chunked(const ktw_catalog_t *c, const char *name, const unsigned
 
     k->n = 0;
     if (st == KTW_OK)
-        st = ktw_scanner_reset(s, name, name == NULL ? 0 : strlen(name));
+        st = ktw_scanner_reset(s, name, name == NULL ? 0 : strlen(name), stream);
     while (st == KTW_OK && at < len) {
         size_t piece = chunk;
 
@@ -106,6 +106,12 @@ static int scan_chunked(const ktw_catalog_t *c, const char *name, const unsigned
         st = ktw_finish(s, collect, k);
     ktw_scanner_destroy(s);
     return st;
+}
+
+static int scan_chunked(const ktw_catalog_t *c, const char *name, const unsigned char *data, size_t len,
+                        size_t chunk, unsigned seed, sink_t *k)
+{
+    return scan_as(c, name, KTW_STREAM_AUTO, data, len, chunk, seed, k);
 }
 
 static int scan(const ktw_catalog_t *c, const char *name, const char *text, sink_t *k)
@@ -218,13 +224,14 @@ static void test_arguments(void)
     CHECK(ktw_feed(s, NULL, 1, collect, &sink) == KTW_ERR_ARG);
     CHECK(ktw_feed(s, NULL, 0, collect, &sink) == KTW_OK);
     CHECK(ktw_feed(s, lit, 1, NULL, NULL) == KTW_OK);
-    CHECK(ktw_scanner_reset(NULL, NULL, 0) == KTW_ERR_ARG);
-    CHECK(ktw_scanner_reset(s, NULL, 3) == KTW_ERR_ARG);
+    CHECK(ktw_scanner_reset(NULL, NULL, 0, KTW_STREAM_AUTO) == KTW_ERR_ARG);
+    CHECK(ktw_scanner_reset(s, NULL, 3, KTW_STREAM_AUTO) == KTW_ERR_ARG);
+    CHECK(ktw_scanner_reset(s, NULL, 0, 2) == KTW_ERR_ARG);
     CHECK(ktw_finish(NULL, collect, &sink) == KTW_ERR_ARG);
     CHECK(ktw_finish(s, collect, &sink) == KTW_OK);
     CHECK(ktw_feed(s, lit, 1, collect, &sink) == KTW_ERR_STATE);
     CHECK(ktw_finish(s, collect, &sink) == KTW_ERR_STATE);
-    CHECK(ktw_scanner_reset(s, NULL, 0) == KTW_OK);
+    CHECK(ktw_scanner_reset(s, NULL, 0, KTW_STREAM_AUTO) == KTW_OK);
     CHECK(ktw_feed(s, lit, 1, collect, &sink) == KTW_OK);
     CHECK(ktw_scanner_dropped(s) == 0);
     ktw_scanner_destroy(s);
@@ -262,13 +269,13 @@ static void test_stop(const ktw_catalog_t *c)
     CHECK(sink.n == 1);
     CHECK(ktw_feed(s, (const unsigned char *)text, 1, collect, &sink) == KTW_ERR_STATE);
     CHECK(ktw_finish(s, collect, &sink) == KTW_ERR_STATE);
-    CHECK(ktw_scanner_reset(s, NULL, 0) == KTW_OK);
+    CHECK(ktw_scanner_reset(s, NULL, 0, KTW_STREAM_AUTO) == KTW_OK);
     sink.stop_after = 0;
     sink.n = 0;
     CHECK(ktw_feed(s, (const unsigned char *)text, strlen(text), collect, &sink) == KTW_OK);
     CHECK(ktw_finish(s, collect, &sink) == KTW_OK);
     CHECK(sink.n == 3);
-    CHECK(ktw_scanner_reset(s, NULL, 0) == KTW_OK);
+    CHECK(ktw_scanner_reset(s, NULL, 0, KTW_STREAM_AUTO) == KTW_OK);
     sink.n = 0;
     sink.stop_after = 1;
     CHECK(ktw_feed(s, (const unsigned char *)GHP_VALID, 40, collect, &sink) == KTW_OK);
@@ -368,7 +375,7 @@ static void test_feed_does_not_allocate(const unsigned char *data, size_t len)
     CHECK(ktw_scanner_create(c, counting_alloc, counting_free, &a, &s) == KTW_OK);
     calls = a.calls;
     sink.n = 0;
-    CHECK(ktw_scanner_reset(s, "authorized_keys", 15) == KTW_OK);
+    CHECK(ktw_scanner_reset(s, "authorized_keys", 15, KTW_STREAM_AUTO) == KTW_OK);
     for (at = 0; at < len; at += 1000)
         CHECK(ktw_feed(s, data + at, len - at < 1000 ? len - at : 1000, collect, &sink) == KTW_OK);
     CHECK(ktw_finish(s, collect, &sink) == KTW_OK);
@@ -453,7 +460,9 @@ static void test_pem_baits(const ktw_catalog_t *c)
     static const char mismatch[] = "-----BEGIN RSA PRIVATE KEY-----\nAAAAAAAAAAAAAAAAAAAAAAAA\n"
                                    "AAAAAAAAAAAAAAAAAAAAAAAA\n-----END EC PRIVATE KEY-----\n";
 
-    CHECK(scan(c, "libparse.so", empty, &sink) == KTW_OK && sink.n == 0);
+    CHECK(scan_as(c, "libparse.so", KTW_STREAM_BINARY, (const unsigned char *)empty, strlen(empty), 4096, 0, &sink) ==
+              KTW_OK &&
+          sink.n == 0);
     CHECK(scan(c, NULL, junk, &sink) == KTW_OK && sink.n == 0);
     CHECK(scan(c, NULL, mismatch, &sink) == KTW_OK && sink.n == 0);
     CHECK(scan(c, NULL, enc, &sink) == KTW_OK && sink.n == 1);
@@ -486,8 +495,10 @@ static void test_pem_forms(const ktw_catalog_t *c)
     }
     CHECK(scan_chunked(c, NULL, crlf, j, 4096, 0, &sink) == KTW_OK);
     CHECK(sink.n == 1 && sink.recs[0].confidence == KTW_CONFIRMED && sink.recs[0].kind == KTW_KIND_PEM_RSA);
-    CHECK(scan_chunked(c, "libssl.so.3", key, len, 4096, 0, &sink) == KTW_OK);
+    CHECK(scan_as(c, "server.pem", KTW_STREAM_BINARY, key, len, 4096, 0, &sink) == KTW_OK);
     CHECK(sink.n == 1 && sink.recs[0].confidence == KTW_INDICATOR && (sink.recs[0].flags & KTW_FLAG_IN_BINARY));
+    CHECK(scan_chunked(c, "libssl.so.3", key, len, 4096, 0, &sink) == KTW_OK);
+    CHECK(sink.n == 1 && sink.recs[0].confidence == KTW_CONFIRMED && !(sink.recs[0].flags & KTW_FLAG_IN_BINARY));
     free(crlf);
     free(key);
     key = load_key("rsa2048-1.legacyenc.pem", &len);
@@ -641,7 +652,7 @@ static void test_dropped(void)
     CHECK(ktw_feed(s, (const unsigned char *)"aaaaaaaaaaaaaaaaaaaa", 20, collect, &sink) == KTW_OK);
     CHECK(ktw_scanner_dropped(s) == 12);
     CHECK(ktw_finish(s, collect, &sink) == KTW_OK && sink.n == 8);
-    CHECK(ktw_scanner_reset(s, NULL, 0) == KTW_OK && ktw_scanner_dropped(s) == 0);
+    CHECK(ktw_scanner_reset(s, NULL, 0, KTW_STREAM_AUTO) == KTW_OK && ktw_scanner_dropped(s) == 0);
     ktw_scanner_destroy(s);
     ktw_catalog_destroy(c);
 }

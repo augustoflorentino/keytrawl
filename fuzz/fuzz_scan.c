@@ -48,7 +48,7 @@ static void run(const uint8_t *data, size_t size, const char *name, unsigned see
     size_t at = 0;
 
     l->n = 0;
-    if (ktw_scanner_reset(scanner, name, name == NULL ? 0 : strlen(name)) != KTW_OK)
+    if (ktw_scanner_reset(scanner, name, name == NULL ? 0 : strlen(name), seed & 1u) != KTW_OK)
         abort();
     while (at < size) {
         size_t piece = size - at;

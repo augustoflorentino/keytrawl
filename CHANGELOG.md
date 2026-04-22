@@ -4,6 +4,31 @@ Each release lists what changed, what updating means for existing code, and ever
 
 ## Unreleased
 
+## 1.0.0 - 2026-04-22
+
+The caller says what a stream is; the file name no longer decides it.
+
+- `ktw_scanner_reset` takes a fourth argument, `stream`: `KTW_STREAM_AUTO` or `KTW_STREAM_BINARY`.
+  In a binary, private keys and key pairs are indicators with `KTW_FLAG_IN_BINARY`. Any other
+  value is `KTW_ERR_ARG`.
+- A name containing ".so" no longer marks the stream as a binary. The substring also matched
+  names such as `server.sol.pem` and `backup.sorted`, demoting real keys to indicators, and a
+  caller holding a PE from a UEFI volume, a kernel or a slice of a memory dump had no way to say
+  it was a binary. A stream starting with an ELF header is still a binary on its own.
+- The command-line scanner takes `-b` to treat every file as a binary.
+- Soname `libkeytrawl.so.1`; the ABI is checked against `abi/keytrawl.abi` from here on.
+
+### Upgrading
+
+- Add the fourth argument to every `ktw_scanner_reset` call. `KTW_STREAM_AUTO` keeps the ELF
+  header detection; pass `KTW_STREAM_BINARY` where you know the bytes are an executable, a library
+  or a firmware blob.
+- Code that relied on a `.so` name to demote keys must pass `KTW_STREAM_BINARY` for those files.
+  Shared libraries read from the start of the file begin with an ELF header and need nothing.
+- Relink: programs built against `libkeytrawl.so.0` do not load `libkeytrawl.so.1`.
+
+Security fixes: none.
+
 ## 0.2.0 - 2026-04-17
 
 Key pairs (K10): a public key whose private key is in the same stream, the sign of a factory key

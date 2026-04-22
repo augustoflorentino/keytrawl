@@ -1,0 +1,1151 @@
+<abi-corpus version='3.0' path='build/abi/libkeytrawl.so' architecture='elf-amd-x86_64' soname='libkeytrawl.so.1' tracking-non-reachable-types='yes'>
+  <elf-needed>
+    <dependency name='libc.so.6'/>
+  </elf-needed>
+  <elf-function-symbols>
+    <elf-symbol name='ktw_algorithm_name' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_catalog_add' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_catalog_compile' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_catalog_create' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_catalog_destroy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_feed' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finding_algorithm' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finding_checks' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finding_confidence' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finding_evidence' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finding_flags' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finding_kind' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finding_length' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finding_line' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finding_name' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finding_offset' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finding_pair_offset' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_finish' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_kind_name' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_scanner_create' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_scanner_destroy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_scanner_dropped' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_scanner_reset' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='ktw_strerror' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+  </elf-function-symbols>
+  <abi-types>
+    <subrange length='100' lower-bound='0' upper-bound='99' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='5dfc2c3b81f9ce6a' id='type-id-2'/>
+    <subrange length='12' lower-bound='0' upper-bound='11' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='236058707b75e5fc' id='type-id-3'/>
+    <subrange length='16' lower-bound='0' upper-bound='15' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='6c35b1e999eba398' id='type-id-4'/>
+    <subrange length='20' lower-bound='0' upper-bound='19' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='1ca9e41140ea49be' id='type-id-5'/>
+    <subrange length='256' lower-bound='0' upper-bound='255' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='5cb16198282e86c6' id='type-id-6'/>
+    <subrange length='32' lower-bound='0' upper-bound='31' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='99f823ef025a9d75' id='type-id-7'/>
+    <subrange length='33' lower-bound='0' upper-bound='32' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='7263f41a68bc1ea3' id='type-id-8'/>
+    <subrange length='384' lower-bound='0' upper-bound='383' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='88e08ceced2d896f' id='type-id-9'/>
+    <subrange length='40' lower-bound='0' upper-bound='39' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='6281bd35fbce8744' id='type-id-10'/>
+    <subrange length='48' lower-bound='0' upper-bound='47' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='c984f699f4a9c7be' id='type-id-11'/>
+    <subrange length='4' lower-bound='0' upper-bound='3' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='cee611f4a73e486c' id='type-id-12'/>
+    <subrange length='5' lower-bound='0' upper-bound='4' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='5aa5cef1e1be46c9' id='type-id-13'/>
+    <subrange length='64' lower-bound='0' upper-bound='63' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='6066f2053fe47763' id='type-id-14'/>
+    <subrange length='6' lower-bound='0' upper-bound='5' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='1c0e592c7ffbdbf5' id='type-id-15'/>
+    <subrange length='8' lower-bound='0' upper-bound='7' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='6e87a8ff484907ad' id='type-id-16'/>
+    <subrange length='9' lower-bound='0' upper-bound='8' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='34fc5cd709b37f15' id='type-id-17'/>
+    <type-decl name='char' size-in-bits='8' hash='65b2d157027b431a' id='type-id-18'/>
+    <array-type-def dimensions='1' type-id='type-id-18' size-in-bits='800' hash='d50160fb78095201' id='type-id-19'>
+      <subrange length='100' lower-bound='0' upper-bound='99' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='5dfc2c3b81f9ce6a' id='type-id-2'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-18' size-in-bits='96' hash='4f7efe945c0bf1a2' id='type-id-20'>
+      <subrange length='12' lower-bound='0' upper-bound='11' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='236058707b75e5fc' id='type-id-3'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-18' size-in-bits='2048' hash='237d5c0c9e600770' id='type-id-21'>
+      <subrange length='256' lower-bound='0' upper-bound='255' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='5cb16198282e86c6' id='type-id-6'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-18' size-in-bits='264' hash='6767770c84592079' id='type-id-22'>
+      <subrange length='33' lower-bound='0' upper-bound='32' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='7263f41a68bc1ea3' id='type-id-8'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-18' size-in-bits='320' hash='0f2c0521a6156296' id='type-id-23'>
+      <subrange length='40' lower-bound='0' upper-bound='39' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='6281bd35fbce8744' id='type-id-10'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-18' size-in-bits='384' hash='2f914e17b8e299d0' id='type-id-24'>
+      <subrange length='48' lower-bound='0' upper-bound='47' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='c984f699f4a9c7be' id='type-id-11'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-18' size-in-bits='512' hash='c83ae5eb9e49b2bd' id='type-id-25'>
+      <subrange length='64' lower-bound='0' upper-bound='63' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='6066f2053fe47763' id='type-id-14'/>
+    </array-type-def>
+    <qualified-type-def type-id='type-id-18' const='yes' hash='45ae2830e476ce98' id='type-id-26'/>
+    <pointer-type-def type-id='type-id-26' size-in-bits='64' hash='83a5509e2ae27d75' id='type-id-27'/>
+    <qualified-type-def type-id='type-id-28' const='yes' hash='843ae6cd84ed976c' id='type-id-29'/>
+    <pointer-type-def type-id='type-id-29' size-in-bits='64' hash='b605c460515e740a' id='type-id-30'/>
+    <qualified-type-def type-id='type-id-31' const='yes' hash='5c94d76fea7c2b63' id='type-id-32'/>
+    <pointer-type-def type-id='type-id-32' size-in-bits='64' hash='3957a28d9a8edaaf' id='type-id-33'/>
+    <qualified-type-def type-id='type-id-34' const='yes' hash='a73b674805d288f9' id='type-id-35'/>
+    <pointer-type-def type-id='type-id-35' size-in-bits='64' hash='1116fba2e46b7c4f' id='type-id-36'/>
+    <qualified-type-def type-id='type-id-37' const='yes' hash='1341ea448978b3ff' id='type-id-38'/>
+    <pointer-type-def type-id='type-id-38' size-in-bits='64' hash='945d60bbed1a29fa' id='type-id-39'/>
+    <function-type size-in-bits='64' hash='b13af2c9155c6e25' id='type-id-40'>
+      <parameter type-id='type-id-33'/>
+      <return type-id='type-id-27'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='1d2a0e161d00b727' id='type-id-41'>
+      <parameter type-id='type-id-42'/>
+      <return type-id='type-id-27'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='322af1a3a0034a49' id='type-id-43'>
+      <parameter type-id='type-id-30'/>
+      <parameter type-id='type-id-44'/>
+      <parameter type-id='type-id-45'/>
+      <parameter type-id='type-id-46'/>
+      <parameter type-id='type-id-47'/>
+      <return type-id='type-id-42'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='09b17557a4872819' id='type-id-48'>
+      <parameter type-id='type-id-33'/>
+      <return type-id='type-id-42'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='1553d10a03b1ad10' id='type-id-49'>
+      <parameter type-id='type-id-50'/>
+      <return type-id='type-id-42'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='e890caaf3040f152' id='type-id-51'>
+      <parameter type-id='type-id-50'/>
+      <parameter type-id='type-id-42'/>
+      <parameter type-id='type-id-27'/>
+      <parameter type-id='type-id-39'/>
+      <parameter type-id='type-id-52'/>
+      <parameter type-id='type-id-52'/>
+      <parameter type-id='type-id-53'/>
+      <parameter type-id='type-id-46'/>
+      <return type-id='type-id-42'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='b2a3efa9ed40ff53' id='type-id-54'>
+      <parameter type-id='type-id-55'/>
+      <parameter type-id='type-id-27'/>
+      <parameter type-id='type-id-52'/>
+      <parameter type-id='type-id-56'/>
+      <return type-id='type-id-42'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='062f270f49d3a07e' id='type-id-57'>
+      <parameter type-id='type-id-55'/>
+      <parameter type-id='type-id-39'/>
+      <parameter type-id='type-id-52'/>
+      <parameter type-id='type-id-58'/>
+      <parameter type-id='type-id-46'/>
+      <return type-id='type-id-42'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='a979ab31a19ffca4' id='type-id-59'>
+      <parameter type-id='type-id-55'/>
+      <parameter type-id='type-id-58'/>
+      <parameter type-id='type-id-46'/>
+      <return type-id='type-id-42'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='3a090ea2ba7b5c36' id='type-id-60'>
+      <parameter type-id='type-id-56'/>
+      <parameter type-id='type-id-44'/>
+      <parameter type-id='type-id-45'/>
+      <parameter type-id='type-id-46'/>
+      <parameter type-id='type-id-61'/>
+      <return type-id='type-id-42'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='fece9039b5941788' id='type-id-62'>
+      <parameter type-id='type-id-46'/>
+      <parameter type-id='type-id-33'/>
+      <return type-id='type-id-42'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='ef9e0196b15c767a' id='type-id-63'>
+      <parameter type-id='type-id-46'/>
+      <parameter type-id='type-id-39'/>
+      <parameter type-id='type-id-52'/>
+      <parameter type-id='type-id-64'/>
+      <return type-id='type-id-42'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='3fa29f123661d403' id='type-id-65'>
+      <parameter type-id='type-id-33'/>
+      <return type-id='type-id-66'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='bdf2e09034002b11' id='type-id-67'>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-66'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='336751deb7ccace4' id='type-id-68'>
+      <parameter type-id='type-id-33'/>
+      <return type-id='type-id-56'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='3d766601fed7db21' id='type-id-69'>
+      <parameter type-id='type-id-50'/>
+      <return type-id='type-id-70'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='ee156842bee3f8e2' id='type-id-71'>
+      <parameter type-id='type-id-55'/>
+      <return type-id='type-id-70'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='edf938d82551349a' id='type-id-72'>
+      <parameter type-id='type-id-46'/>
+      <parameter type-id='type-id-46'/>
+      <return type-id='type-id-70'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='dbc09a9870c76547' id='type-id-73'>
+      <parameter type-id='type-id-46'/>
+      <parameter type-id='type-id-52'/>
+      <return type-id='type-id-46'/>
+    </function-type>
+    <type-decl name='int' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-42'/>
+    <pointer-type-def type-id='type-id-62' size-in-bits='64' hash='53dd1e54080ca4eb' id='type-id-74'/>
+    <pointer-type-def type-id='type-id-63' size-in-bits='64' hash='aea8624ad77e84a6' id='type-id-75'/>
+    <pointer-type-def type-id='type-id-28' size-in-bits='64' hash='8797454dc86858af' id='type-id-50'/>
+    <pointer-type-def type-id='type-id-50' size-in-bits='64' hash='a826c88a191bebf1' id='type-id-61'/>
+    <array-type-def dimensions='1' type-id='type-id-76' size-in-bits='74752' hash='a28629539a6f1fb4' id='type-id-77'>
+      <subrange length='8' lower-bound='0' upper-bound='7' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='6e87a8ff484907ad' id='type-id-16'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-78' size-in-bits='14336' hash='8fbd42c205e18d58' id='type-id-79'>
+      <subrange length='32' lower-bound='0' upper-bound='31' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='99f823ef025a9d75' id='type-id-7'/>
+    </array-type-def>
+    <pointer-type-def type-id='type-id-80' size-in-bits='64' hash='f43cb8d4158955af' id='type-id-81'/>
+    <array-type-def dimensions='1' type-id='type-id-82' size-in-bits='55552' hash='484eee12dab7049f' id='type-id-83'>
+      <subrange length='4' lower-bound='0' upper-bound='3' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='cee611f4a73e486c' id='type-id-12'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-84' size-in-bits='17408' hash='e6a3fe6cd4166e08' id='type-id-85'>
+      <subrange length='4' lower-bound='0' upper-bound='3' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='cee611f4a73e486c' id='type-id-12'/>
+    </array-type-def>
+    <pointer-type-def type-id='type-id-34' size-in-bits='64' hash='7ed79581a367e29b' id='type-id-55'/>
+    <pointer-type-def type-id='type-id-55' size-in-bits='64' hash='4e4a4031927323fb' id='type-id-47'/>
+    <array-type-def dimensions='1' type-id='type-id-86' size-in-bits='4096' hash='c6fd692ec43c07bb' id='type-id-87'>
+      <subrange length='8' lower-bound='0' upper-bound='7' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='6e87a8ff484907ad' id='type-id-16'/>
+    </array-type-def>
+    <pointer-type-def type-id='type-id-88' size-in-bits='64' hash='e44fa82f0208cba5' id='type-id-89'/>
+    <pointer-type-def type-id='type-id-52' size-in-bits='64' hash='fce61c10660e5f2d' id='type-id-64'/>
+    <class-decl name='ktw_catalog' is-struct='yes' visibility='default' size-in-bits='3008' hash='2e388ae21d50be4d' id='type-id-90'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='alloc_fn' type-id='type-id-44' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='free_fn' type-id='type-id-45' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='alloc_ctx' type-id='type-id-46' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='groups' type-id='type-id-56' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='compiled' type-id='type-id-42' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='patterns' type-id='type-id-81' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='npatterns' type-id='type-id-52' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='users' type-id='type-id-89' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='nusers' type-id='type-id-52' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='table' type-id='type-id-91' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='own_start' type-id='type-id-91' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='own' type-id='type-id-91' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='dict' type-id='type-id-91' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='nstates' type-id='type-id-56' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='800'>
+        <var-decl name='first_out' type-id='type-id-56' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='832'>
+        <var-decl name='root' type-id='type-id-56' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='864'>
+        <var-decl name='leaves' type-id='type-id-92' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2944'>
+        <var-decl name='user_buf' type-id='type-id-52' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='ktw_finding' is-struct='yes' visibility='default' size-in-bits='2560' hash='e438de44f4f313e7' id='type-id-93'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='kind' type-id='type-id-42' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='name' type-id='type-id-27' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='algorithm' type-id='type-id-42' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='confidence' type-id='type-id-42' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='checks' type-id='type-id-56' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='flags' type-id='type-id-56' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='offset' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='length' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='line' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='pair_offset' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='evidence' type-id='type-id-21' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='ktw_scanner' is-struct='yes' visibility='default' size-in-bits='175744' hash='6ed264b676f70f8c' id='type-id-94'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='cat' type-id='type-id-30' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='alloc_fn' type-id='type-id-44' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='free_fn' type-id='type-id-45' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='alloc_ctx' type-id='type-id-46' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='fn' type-id='type-id-58' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='fctx' type-id='type-id-46' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='cur' type-id='type-id-39' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='base' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='pos' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='now' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='dropped' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='state' type-id='type-id-56' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='736'>
+        <var-decl name='finished' type-id='type-id-42' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='stopped' type-id='type-id-42' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='800'>
+        <var-decl name='binary' type-id='type-id-42' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='832'>
+        <var-decl name='active' type-id='type-id-56' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='864'>
+        <var-decl name='head' type-id='type-id-95' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='896'>
+        <var-decl name='hist' type-id='type-id-96' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1408'>
+        <var-decl name='pem' type-id='type-id-83' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='56960'>
+        <var-decl name='der' type-id='type-id-77' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='131712'>
+        <var-decl name='tok' type-id='type-id-87' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='135808'>
+        <var-decl name='cfg' type-id='type-id-97' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='141312'>
+        <var-decl name='pub' type-id='type-id-85' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='158720'>
+        <var-decl name='ident' type-id='type-id-79' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='173056'>
+        <var-decl name='ident_next' type-id='type-id-56' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='173120'>
+        <var-decl name='pair_at' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='173184'>
+        <var-decl name='finding' type-id='type-id-31' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='832' is-anonymous='yes' hash='e7933d464ea04342' id='type-id-98'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='kind' type-id='type-id-42' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='name' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='literal_len' type-id='type-id-52' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='tail_max' type-id='type-id-52' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='fn' type-id='type-id-53' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='ctx' type-id='type-id-46' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='832' is-anonymous='yes' hash='682f4e8da9f7a958' id='type-id-99'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='h' type-id='type-id-100' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='n' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='buf' type-id='type-id-96' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='560' is-anonymous='yes' hash='6772c7b94122028a' id='type-id-101'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='handler' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='sub' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='len' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='user' type-id='type-id-103' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48'>
+        <var-decl name='lit' type-id='type-id-96' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='1344' is-anonymous='yes' hash='bc7c4e6e464db7f6' id='type-id-104'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='mode' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='alg' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='step' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24'>
+        <var-decl name='phase' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='lenleft' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='40'>
+        <var-decl name='tag' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48'>
+        <var-decl name='first' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='56'>
+        <var-decl name='done' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='failed' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='72'>
+        <var-decl name='oidlen' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='80'>
+        <var-decl name='ringn' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='88'>
+        <var-decl name='prog' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='unused' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='104'>
+        <var-decl name='hdr' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='len' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='left' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='pos' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='params' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='bits_end' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='288'>
+        <var-decl name='seq_end' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='ring' type-id='type-id-106' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='sha' type-id='type-id-107' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='2688' is-anonymous='yes' hash='57bc17e70346eb72' id='type-id-108'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='mode' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='phase' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='failed' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24'>
+        <var-decl name='lenn' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='caplen' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='40'>
+        <var-decl name='cipherlen' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48'>
+        <var-decl name='typelen' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='field' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='len' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='left' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='nkeys' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='key' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='field2len' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='cap' type-id='type-id-109' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='cipher' type-id='type-id-22' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='904'>
+        <var-decl name='type' type-id='type-id-24' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1344'>
+        <var-decl name='id' type-id='type-id-110' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='5504' is-anonymous='yes' hash='4412e698d2c2a6bb' id='type-id-111'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='mode' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='state' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='kw' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24'>
+        <var-decl name='idx' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='quote_at_s' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='40'>
+        <var-decl name='dead' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48'>
+        <var-decl name='blank' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='56'>
+        <var-decl name='inquote' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='ntok' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='72'>
+        <var-decl name='lastlen' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='80'>
+        <var-decl name='firstlen' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='88'>
+        <var-decl name='typeknown' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='typelen' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='104'>
+        <var-decl name='comment' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='112'>
+        <var-decl name='plain_in' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='120'>
+        <var-decl name='struct_in' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='k' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='136'>
+        <var-decl name='type_tok' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='144'>
+        <var-decl name='blob_tok' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='152'>
+        <var-decl name='blob_done' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='cr' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='plain_count' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='s' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='e' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='288'>
+        <var-decl name='t' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='line' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='line_start' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='tok_start' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='rs_pos' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='tok' type-id='type-id-96' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1088'>
+        <var-decl name='first' type-id='type-id-19' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1888'>
+        <var-decl name='last' type-id='type-id-19' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2688'>
+        <var-decl name='b64' type-id='type-id-112' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2816'>
+        <var-decl name='ssh' type-id='type-id-113' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='1344' is-anonymous='yes' hash='6ec19982f31516d4' id='type-id-114'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='phase' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='lenn' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='failed' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24'>
+        <var-decl name='alg' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='target' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='40'>
+        <var-decl name='mpint' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48'>
+        <var-decl name='fields' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='56'>
+        <var-decl name='typelen' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='hashed' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='field' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='len' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='left' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='type' type-id='type-id-23' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='sha' type-id='type-id-107' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='128' is-anonymous='yes' hash='a9bfddd1db3097c5' id='type-id-115'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='quad' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='pads' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='padding' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24'>
+        <var-decl name='done' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='error' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='40'>
+        <var-decl name='left' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='count' type-id='type-id-66' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='9152' is-anonymous='yes' hash='af31172bd7b51202' id='type-id-116'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='schema' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='bare' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='phase' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24'>
+        <var-decl name='depth' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='tag' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='40'>
+        <var-decl name='lenleft' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48'>
+        <var-decl name='caplen' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='56'>
+        <var-decl name='failed' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='done' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='72'>
+        <var-decl name='alg' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='80'>
+        <var-decl name='aligned' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='88'>
+        <var-decl name='last' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='odd' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='104'>
+        <var-decl name='extra' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='112'>
+        <var-decl name='inner' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='120'>
+        <var-decl name='rawlen' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='hash' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='136'>
+        <var-decl name='got' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='144'>
+        <var-decl name='idbad' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='152'>
+        <var-decl name='ctag' type-id='type-id-117' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='count' type-id='type-id-118' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='272'>
+        <var-decl name='cap' type-id='type-id-119' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='416'>
+        <var-decl name='len' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='clen' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='480'>
+        <var-decl name='left' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='total' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='544'>
+        <var-decl name='end' type-id='type-id-120' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='ilen' type-id='type-id-121' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='992'>
+        <var-decl name='plen' type-id='type-id-103' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1008'>
+        <var-decl name='glen' type-id='type-id-103' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1024'>
+        <var-decl name='xlen' type-id='type-id-103' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1088'>
+        <var-decl name='ha' type-id='type-id-107' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1920'>
+        <var-decl name='hb' type-id='type-id-107' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2752'>
+        <var-decl name='kp' type-id='type-id-122' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='5824'>
+        <var-decl name='kg' type-id='type-id-122' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8896'>
+        <var-decl name='kx' type-id='type-id-123' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='4352' is-anonymous='yes' hash='601aa923250b3238' id='type-id-124'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='used' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='handler' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='start' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='run' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='spki' type-id='type-id-125' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1536'>
+        <var-decl name='b64' type-id='type-id-112' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1664'>
+        <var-decl name='ssh' type-id='type-id-113' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='9344' is-anonymous='yes' hash='40b6c77f7f2a6ba2' id='type-id-126'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='used' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='held' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='start' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='end' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='der' type-id='type-id-127' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='448' is-anonymous='yes' hash='a7dddecbbedaf5dd' id='type-id-128'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='used' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='pub' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='alg' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24'>
+        <var-decl name='encrypted' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='kind' type-id='type-id-42' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='start' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='len' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='digest' type-id='type-id-123' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='13888' is-anonymous='yes' hash='fc1aba12d038ae3f' id='type-id-129'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='used' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='state' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='label' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24'>
+        <var-decl name='held' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='maybe_hdr' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='40'>
+        <var-decl name='maybe_body' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48'>
+        <var-decl name='encrypted' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='56'>
+        <var-decl name='dek' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='kmp' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='72'>
+        <var-decl name='line_cr' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='80'>
+        <var-decl name='hdrlen' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='88'>
+        <var-decl name='ohn' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='ok' type-id='type-id-103' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='112'>
+        <var-decl name='short_body' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='idx' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='nfull' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='linelen' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='start' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='end' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='hdrkey' type-id='type-id-20' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='480'>
+        <var-decl name='ohdr' type-id='type-id-130' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='b64' type-id='type-id-112' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='der' type-id='type-id-127' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='9856'>
+        <var-decl name='ssh' type-id='type-id-113' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='12544'>
+        <var-decl name='spki' type-id='type-id-125' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' is-struct='yes' visibility='default' size-in-bits='512' is-anonymous='yes' hash='d098e030e324d5e5' id='type-id-131'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='used' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='type' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='phase' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24'>
+        <var-decl name='fail' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='segdigits' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='40'>
+        <var-decl name='numsegs' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48'>
+        <var-decl name='base32' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='56'>
+        <var-decl name='lower' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='upperdigit' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='80'>
+        <var-decl name='user' type-id='type-id-103' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='n' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='seglen' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='crc' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='seek' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='run' type-id='type-id-105' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='start' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='first' type-id='type-id-95' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='352'>
+        <var-decl name='lastb' type-id='type-id-95' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='tail6' type-id='type-id-130' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='buf' type-id='type-id-132' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='__uint16_t' type-id='type-id-133' size-in-bits='16' hash='012767b19cd3b7f4' id='type-id-134'/>
+    <typedef-decl name='__uint32_t' type-id='type-id-56' size-in-bits='32' hash='01b265816e53dd71' id='type-id-135'/>
+    <typedef-decl name='__uint64_t' type-id='type-id-1' size-in-bits='64' hash='8b230c0ebd12548b' id='type-id-136'/>
+    <typedef-decl name='__uint8_t' type-id='type-id-37' size-in-bits='8' hash='7948234ee9eb1041' id='type-id-137'/>
+    <typedef-decl name='ktw_alloc_fn' type-id='type-id-138' size-in-bits='64' hash='77dcac2fc426a312' id='type-id-44'/>
+    <typedef-decl name='ktw_b64_t' type-id='type-id-115' size-in-bits='128' hash='46a9f019fc4b7590' id='type-id-112'/>
+    <typedef-decl name='ktw_catalog_t' type-id='type-id-90' size-in-bits='3008' hash='3f136fdbe88869e3' id='type-id-28'/>
+    <typedef-decl name='ktw_cfg_t' type-id='type-id-111' size-in-bits='5504' hash='dfa0b6aa4f0a35eb' id='type-id-97'/>
+    <typedef-decl name='ktw_der_t' type-id='type-id-116' size-in-bits='9152' hash='4b99f6829648507b' id='type-id-127'/>
+    <typedef-decl name='ktw_derslot_t' type-id='type-id-126' size-in-bits='9344' hash='35ba77f79b362433' id='type-id-76'/>
+    <typedef-decl name='ktw_finding_fn' type-id='type-id-74' size-in-bits='64' hash='75b51dc5acaa49f3' id='type-id-58'/>
+    <typedef-decl name='ktw_finding_t' type-id='type-id-93' size-in-bits='2560' hash='c165a79144296747' id='type-id-31'/>
+    <typedef-decl name='ktw_free_fn' type-id='type-id-139' size-in-bits='64' hash='21d4fa73e6c6f741' id='type-id-45'/>
+    <typedef-decl name='ktw_ident_t' type-id='type-id-128' size-in-bits='448' hash='4108924f047bd249' id='type-id-78'/>
+    <typedef-decl name='ktw_pattern_t' type-id='type-id-101' size-in-bits='560' hash='5d180d652c164f15' id='type-id-80'/>
+    <typedef-decl name='ktw_pem_t' type-id='type-id-129' size-in-bits='13888' hash='c2a8aa95a4b04275' id='type-id-82'/>
+    <typedef-decl name='ktw_pubid_t' type-id='type-id-114' size-in-bits='1344' hash='a0bbf6ec7958d070' id='type-id-110'/>
+    <typedef-decl name='ktw_pubslot_t' type-id='type-id-124' size-in-bits='4352' hash='1d73f3fe6c25c05e' id='type-id-84'/>
+    <typedef-decl name='ktw_scanner_t' type-id='type-id-94' size-in-bits='175744' hash='ecc500b6fcddeb2d' id='type-id-34'/>
+    <typedef-decl name='ktw_sha256_t' type-id='type-id-99' size-in-bits='832' hash='86ec1bad70ec17e4' id='type-id-107'/>
+    <typedef-decl name='ktw_spki_t' type-id='type-id-104' size-in-bits='1344' hash='a0bbf6ec7958d070' id='type-id-125'/>
+    <typedef-decl name='ktw_ssh_t' type-id='type-id-108' size-in-bits='2688' hash='a57e9986b2b82b49' id='type-id-113'/>
+    <typedef-decl name='ktw_tok_t' type-id='type-id-131' size-in-bits='512' hash='765a122654bfb09f' id='type-id-86'/>
+    <typedef-decl name='ktw_user_t' type-id='type-id-98' size-in-bits='832' hash='86ec1bad70ec17e4' id='type-id-88'/>
+    <typedef-decl name='ktw_validate_fn' type-id='type-id-75' size-in-bits='64' hash='853746e204afb686' id='type-id-53'/>
+    <typedef-decl name='size_t' type-id='type-id-1' size-in-bits='64' hash='8b230c0ebd12548b' id='type-id-52'/>
+    <typedef-decl name='uint16_t' type-id='type-id-134' size-in-bits='16' hash='012767b19cd3b7f4' id='type-id-103'/>
+    <typedef-decl name='uint32_t' type-id='type-id-135' size-in-bits='32' hash='01b265816e53dd71' id='type-id-105'/>
+    <typedef-decl name='uint64_t' type-id='type-id-136' size-in-bits='64' hash='8b230c0ebd12548b' id='type-id-66'/>
+    <typedef-decl name='uint8_t' type-id='type-id-137' size-in-bits='8' hash='7948234ee9eb1041' id='type-id-102'/>
+    <pointer-type-def type-id='type-id-103' size-in-bits='64' hash='a0d60862488ff50d' id='type-id-91'/>
+    <array-type-def dimensions='1' type-id='type-id-103' size-in-bits='80' hash='e0e4ccca67d4f03a' id='type-id-118'>
+      <subrange length='5' lower-bound='0' upper-bound='4' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='5aa5cef1e1be46c9' id='type-id-13'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-105' size-in-bits='160' hash='fc9619759bc5e49b' id='type-id-120'>
+      <subrange length='5' lower-bound='0' upper-bound='4' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='5aa5cef1e1be46c9' id='type-id-13'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-105' size-in-bits='256' hash='ec6149165cd2c1fc' id='type-id-100'>
+      <subrange length='8' lower-bound='0' upper-bound='7' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='6e87a8ff484907ad' id='type-id-16'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-105' size-in-bits='288' hash='45a7854682444dc1' id='type-id-121'>
+      <subrange length='9' lower-bound='0' upper-bound='8' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='34fc5cd709b37f15' id='type-id-17'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-102' size-in-bits='2048' hash='e57a7f29a7a6c956' id='type-id-92'>
+      <subrange length='256' lower-bound='0' upper-bound='255' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='5cb16198282e86c6' id='type-id-6'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-102' size-in-bits='40' hash='108c31c5e7291d11' id='type-id-117'>
+      <subrange length='5' lower-bound='0' upper-bound='4' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='5aa5cef1e1be46c9' id='type-id-13'/>
+    </array-type-def>
+    <type-decl name='unsigned char' size-in-bits='8' hash='6ebac62b3366db68' id='type-id-37'/>
+    <pointer-type-def type-id='type-id-37' size-in-bits='64' hash='daf9679977094cab' id='type-id-132'/>
+    <array-type-def dimensions='1' type-id='type-id-37' size-in-bits='128' hash='127da3719e6e8e4b' id='type-id-119'>
+      <subrange length='16' lower-bound='0' upper-bound='15' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='6c35b1e999eba398' id='type-id-4'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-37' size-in-bits='160' hash='985161a440326bfa' id='type-id-106'>
+      <subrange length='20' lower-bound='0' upper-bound='19' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='1ca9e41140ea49be' id='type-id-5'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-37' size-in-bits='256' hash='f6cfb3c366a7ecc7' id='type-id-123'>
+      <subrange length='32' lower-bound='0' upper-bound='31' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='99f823ef025a9d75' id='type-id-7'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-37' size-in-bits='3072' hash='09daeece5037c622' id='type-id-122'>
+      <subrange length='384' lower-bound='0' upper-bound='383' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='88e08ceced2d896f' id='type-id-9'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-37' size-in-bits='384' hash='e2ad6213de0d16ca' id='type-id-109'>
+      <subrange length='48' lower-bound='0' upper-bound='47' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='c984f699f4a9c7be' id='type-id-11'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-37' size-in-bits='32' hash='05d0aadb133681f1' id='type-id-95'>
+      <subrange length='4' lower-bound='0' upper-bound='3' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='cee611f4a73e486c' id='type-id-12'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-37' size-in-bits='512' hash='15982d8ef275eefe' id='type-id-96'>
+      <subrange length='64' lower-bound='0' upper-bound='63' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='6066f2053fe47763' id='type-id-14'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-37' size-in-bits='48' hash='f8759004b0e30470' id='type-id-130'>
+      <subrange length='6' lower-bound='0' upper-bound='5' type-id='type-id-1' size-in-bits='64' is-anonymous='yes' hash='1c0e592c7ffbdbf5' id='type-id-15'/>
+    </array-type-def>
+    <type-decl name='unsigned int' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-56'/>
+    <type-decl name='unsigned long int' size-in-bits='64' hash='da551c1631705dfe' id='type-id-1'/>
+    <type-decl name='unsigned short int' size-in-bits='16' hash='e3133321c12b1361' id='type-id-133'/>
+    <type-decl name='void' hash='8dcbc64750c3d4e3' id='type-id-70'/>
+    <pointer-type-def type-id='type-id-72' size-in-bits='64' hash='c559852600f1c7c8' id='type-id-139'/>
+    <pointer-type-def type-id='type-id-70' hash='19e246ce75ee6a42' id='type-id-46'/>
+    <pointer-type-def type-id='type-id-73' size-in-bits='64' hash='2390ef35ddf7f554' id='type-id-138'/>
+  </abi-types>
+  <abi-instr address-size='64' path='/home/augustofl/opensources/libs-c/keytrawl/src/ktw_catalog.c' comp-dir-path='/home/augustofl/opensources/libs-c/keytrawl/build/abi' language='LANG_C99'>
+      <function-decl name='ktw_catalog_add' type-id='type-id-51' mangled-name='ktw_catalog_add' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_catalog_add'/>
+      <function-decl name='ktw_catalog_compile' type-id='type-id-49' mangled-name='ktw_catalog_compile' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_catalog_compile'/>
+      <function-decl name='ktw_catalog_create' type-id='type-id-60' mangled-name='ktw_catalog_create' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_catalog_create'/>
+      <function-decl name='ktw_catalog_destroy' type-id='type-id-69' mangled-name='ktw_catalog_destroy' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_catalog_destroy'/>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/augustofl/opensources/libs-c/keytrawl/src/ktw_scanner.c' comp-dir-path='/home/augustofl/opensources/libs-c/keytrawl/build/abi' language='LANG_C99'>
+      <function-decl name='ktw_algorithm_name' type-id='type-id-41' mangled-name='ktw_algorithm_name' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_algorithm_name'/>
+      <function-decl name='ktw_finding_evidence' type-id='type-id-40' mangled-name='ktw_finding_evidence' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finding_evidence'/>
+      <function-decl name='ktw_finding_name' type-id='type-id-40' mangled-name='ktw_finding_name' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finding_name'/>
+      <function-decl name='ktw_kind_name' type-id='type-id-41' mangled-name='ktw_kind_name' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_kind_name'/>
+      <function-decl name='ktw_strerror' type-id='type-id-41' mangled-name='ktw_strerror' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_strerror'/>
+      <function-decl name='ktw_feed' type-id='type-id-57' mangled-name='ktw_feed' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_feed'/>
+      <function-decl name='ktw_finding_algorithm' type-id='type-id-48' mangled-name='ktw_finding_algorithm' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finding_algorithm'/>
+      <function-decl name='ktw_finding_confidence' type-id='type-id-48' mangled-name='ktw_finding_confidence' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finding_confidence'/>
+      <function-decl name='ktw_finding_kind' type-id='type-id-48' mangled-name='ktw_finding_kind' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finding_kind'/>
+      <function-decl name='ktw_finish' type-id='type-id-59' mangled-name='ktw_finish' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finish'/>
+      <function-decl name='ktw_scanner_create' type-id='type-id-43' mangled-name='ktw_scanner_create' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_scanner_create'/>
+      <function-decl name='ktw_scanner_reset' type-id='type-id-54' mangled-name='ktw_scanner_reset' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_scanner_reset'/>
+      <function-decl name='ktw_finding_length' type-id='type-id-65' mangled-name='ktw_finding_length' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finding_length'/>
+      <function-decl name='ktw_finding_line' type-id='type-id-65' mangled-name='ktw_finding_line' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finding_line'/>
+      <function-decl name='ktw_finding_offset' type-id='type-id-65' mangled-name='ktw_finding_offset' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finding_offset'/>
+      <function-decl name='ktw_finding_pair_offset' type-id='type-id-65' mangled-name='ktw_finding_pair_offset' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finding_pair_offset'/>
+      <function-decl name='ktw_scanner_dropped' type-id='type-id-67' mangled-name='ktw_scanner_dropped' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_scanner_dropped'/>
+      <function-decl name='ktw_finding_checks' type-id='type-id-68' mangled-name='ktw_finding_checks' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finding_checks'/>
+      <function-decl name='ktw_finding_flags' type-id='type-id-68' mangled-name='ktw_finding_flags' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_finding_flags'/>
+      <function-decl name='ktw_scanner_destroy' type-id='type-id-71' mangled-name='ktw_scanner_destroy' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='ktw_scanner_destroy'/>
+  </abi-instr>
+</abi-corpus>

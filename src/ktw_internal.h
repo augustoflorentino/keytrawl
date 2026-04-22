@@ -331,7 +331,7 @@ struct ktw_scanner {
     unsigned state;
     int finished;
     int stopped;
-    int so_name;
+    int binary;
     unsigned active;
     unsigned char head[4];
     unsigned char hist[KTW_HIST];

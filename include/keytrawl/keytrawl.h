@@ -114,7 +114,10 @@ KTW_API int ktw_scanner_create(const ktw_catalog_t *catalog, ktw_alloc_fn alloc_
                                void *alloc_ctx, ktw_scanner_t **out_scanner);
 KTW_API void ktw_scanner_destroy(ktw_scanner_t *scanner);
 
-KTW_API int ktw_scanner_reset(ktw_scanner_t *scanner, const char *name, size_t name_len);
+#define KTW_STREAM_AUTO 0u
+#define KTW_STREAM_BINARY 1u
+
+KTW_API int ktw_scanner_reset(ktw_scanner_t *scanner, const char *name, size_t name_len, unsigned stream);
 
 KTW_API int ktw_feed(ktw_scanner_t *scanner, const unsigned char *data, size_t data_len, ktw_finding_fn finding_fn,
                      void *finding_ctx);

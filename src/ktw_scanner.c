@@ -36,7 +36,7 @@ int ktw_scanner_create(const ktw_catalog_t *cat, ktw_alloc_fn alloc_fn, ktw_free
     s->alloc_ctx = alloc_ctx;
     for (i = 0; i < KTW_TOK_SLOTS; i++)
         s->tok[i].buf = bufs == NULL ? NULL : bufs + i * cat->user_buf;
-    ktw_scanner_reset(s, NULL, 0);
+    ktw_scanner_reset(s, NULL, 0, KTW_STREAM_AUTO);
     *out_scanner = s;
     return KTW_OK;
 }
@@ -48,16 +48,6 @@ void ktw_scanner_destroy(ktw_scanner_t *s)
     if (s->tok[0].buf != NULL)
         s->free_fn(s->alloc_ctx, s->tok[0].buf);
     s->free_fn(s->alloc_ctx, s);
-}
-
-static int ktw_has(const char *hay, size_t hay_len, const char *needle)
-{
-    size_t n = strlen(needle), i;
-
-    for (i = 0; i + n <= hay_len; i++)
-        if (memcmp(hay + i, needle, n) == 0)
-            return 1;
-    return 0;
 }
 
 static int ktw_starts(const char *s, size_t len, const char *prefix)
@@ -87,14 +77,14 @@ static int ktw_config_mode(const char *name, size_t len, const char *base, size_
     return KTW_CFG_NONE;
 }
 
-int ktw_scanner_reset(ktw_scanner_t *s, const char *name, size_t name_len)
+int ktw_scanner_reset(ktw_scanner_t *s, const char *name, size_t name_len, unsigned stream)
 {
     const char *base = name;
     size_t base_len = name_len, i;
     unsigned char *bufs[KTW_TOK_SLOTS];
     int mode = KTW_CFG_NONE;
 
-    if (s == NULL || (name == NULL && name_len > 0))
+    if (s == NULL || (name == NULL && name_len > 0) || stream > KTW_STREAM_BINARY)
         return KTW_ERR_ARG;
     for (i = 0; i < name_len; i++) {
         if (name[i] == '/') {
@@ -118,7 +108,7 @@ int ktw_scanner_reset(ktw_scanner_t *s, const char *name, size_t name_len)
     s->active = 0;
     memset(s->head, 0, sizeof(s->head));
     memset(s->hist, 0, sizeof(s->hist));
-    s->so_name = name != NULL && ktw_has(base, base_len, ".so");
+    s->binary = stream == KTW_STREAM_BINARY;
     if (name != NULL && (s->cat->groups & KTW_GROUP_CONFIG))
         mode = ktw_config_mode(name, name_len, base, base_len);
     ktw_cfg_reset(&s->cfg, mode);
@@ -184,7 +174,7 @@ void ktw_mask(char *out, size_t out_size, const unsigned char *head, size_t head
 
 static int ktw_in_binary(const ktw_scanner_t *s)
 {
-    return s->so_name || (s->now >= 3 && memcmp(s->head, "\x7f" "ELF", 4) == 0);
+    return s->binary || (s->now >= 3 && memcmp(s->head, "\x7f" "ELF", 4) == 0);
 }
 
 int ktw_emit(ktw_scanner_t *s, int kind, const char *name, int alg, int conf, unsigned checks, unsigned flags,

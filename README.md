@@ -25,8 +25,10 @@ when its structure checks out; what is only shaped like a secret is reported as 
 | Key pairs: a public key whose private key is in the same stream | the public value (RSA n, DSA y, EC point, Ed25519 key) of PEM `PUBLIC KEY`, `RSA PUBLIC KEY`, `CERTIFICATE`, DER SubjectPublicKeyInfo and OpenSSH lines, equal to that of a private key; computed from PKCS#8 Ed25519 and DSA keys, which do not carry it | confirmed |
 | Your own literals | your validator callback decides | yours |
 
-Private keys inside an executable (ELF, or a `.so` in the stream name) are reported as indicators
-with `KTW_FLAG_IN_BINARY`: those are almost always test vectors. Encrypted keys carry
+Private keys and key pairs inside an executable are reported as indicators with
+`KTW_FLAG_IN_BINARY`: those are almost always test vectors. A stream is an executable when it
+starts with an ELF header, or when the caller says so with `KTW_STREAM_BINARY` (a PE inside a UEFI
+volume, a kernel, a slice of a memory dump). Encrypted keys carry
 `KTW_FLAG_ENCRYPTED`. keytrawl never decrypts anything and never touches the network.
 
 A key pair is the sign of a factory key: every unit ships the same private key, and the public
@@ -50,7 +52,8 @@ static int print_finding(void *ctx, const ktw_finding_t *f)
 ktw_catalog_create(KTW_GROUP_ALL, NULL, NULL, NULL, &catalog); /* once */
 ktw_catalog_compile(catalog);                                  /* read-only from here on */
 ktw_scanner_create(catalog, NULL, NULL, NULL, &scanner);       /* one per stream or thread */
-ktw_scanner_reset(scanner, "/etc/config/wireless", 20);        /* the name enables Wi-Fi and authorized_keys */
+ktw_scanner_reset(scanner, "/etc/config/wireless", 20,        /* the name enables Wi-Fi and authorized_keys */
+                  KTW_STREAM_AUTO);                            /* or KTW_STREAM_BINARY for an executable */
 while ((n = fread(buf, 1, sizeof buf, in)) > 0)
     ktw_feed(scanner, buf, n, print_finding, NULL);
 ktw_finish(scanner, print_finding, NULL);
