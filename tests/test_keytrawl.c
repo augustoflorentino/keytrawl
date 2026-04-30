@@ -244,9 +244,10 @@ static void test_names(void)
 {
     int i;
 
-    for (i = KTW_KIND_PEM_RSA; i <= KTW_KIND_AUTHORIZED_KEY; i++)
+    for (i = KTW_KIND_PEM_RSA; i <= KTW_KIND_GITLAB_TOKEN; i++)
         CHECK(strcmp(ktw_kind_name(i), "unknown") != 0);
     CHECK(strcmp(ktw_kind_name(0), "unknown") == 0);
+    CHECK(strcmp(ktw_kind_name(KTW_KIND_GITLAB_TOKEN + 1), "unknown") == 0);
     CHECK(strcmp(ktw_kind_name(-1), "unknown") == 0);
     CHECK(strcmp(ktw_kind_name(KTW_KIND_USER + 5), "user") == 0);
     for (i = KTW_ALG_NONE; i < KTW_ALG_UNKNOWN; i++)
@@ -448,6 +449,50 @@ static void test_other_tokens(const ktw_catalog_t *c)
     CHECK(sink.n == 1 && r != NULL && r->length == 32);
     CHECK(scan(c, NULL, "sk_live_tooshort ", &sink) == KTW_OK && sink.n == 0);
     CHECK(scan(c, NULL, "sk_live_4eC39HqLyjWDarjtT1zdp7dc_x", &sink) == KTW_OK && sink.n == 0);
+}
+
+#define NPM_VALID "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"
+#define PYPI_VALID                                                                                         \
+    "pypi-AgEIcHlwaS5vcmcCGnB5cGkub3JnLXRva2VuLWtleXRyYXdsLXRlc3QAAikAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0e" \
+    "HyAhIiMkJSYnKAAABiBkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ent8fX5_gIGCgw"
+
+static void test_package_tokens(const ktw_catalog_t *c)
+{
+    char bad[64];
+    const rec_t *r;
+    size_t i;
+
+    CHECK(scan(c, NULL, "//registry.npmjs.org/:_authToken=" NPM_VALID "\n", &sink) == KTW_OK && sink.n == 1);
+    r = find_kind(&sink, KTW_KIND_NPM_TOKEN);
+    CHECK(r != NULL && r->confidence == KTW_CONFIRMED && (r->checks & KTW_CHECK_CHECKSUM) && r->offset == 33 &&
+          r->length == 40 && strstr(r->evidence, "ABCDEFGHIJ") == NULL);
+    for (i = 4; i < strlen(NPM_VALID); i++) {
+        strcpy(bad, NPM_VALID);
+        bad[i] = bad[i] == 'a' ? 'b' : 'a';
+        CHECK(scan(c, NULL, bad, &sink) == KTW_OK && sink.n == 0);
+    }
+    CHECK(scan(c, NULL, NPM_VALID "x", &sink) == KTW_OK && sink.n == 0);
+    CHECK(scan(c, NULL, "x" NPM_VALID, &sink) == KTW_OK && sink.n == 0);
+    CHECK(scan(c, NULL, "password = " PYPI_VALID "\n", &sink) == KTW_OK && sink.n == 1);
+    r = find_kind(&sink, KTW_KIND_PYPI_TOKEN);
+    CHECK(r != NULL && r->confidence == KTW_LIKELY && r->offset == 11 && r->length == strlen(PYPI_VALID));
+    CHECK(scan_chunked(c, NULL, (const unsigned char *)PYPI_VALID, strlen(PYPI_VALID), 0, 7, &sink) == KTW_OK &&
+          sink.n == 1);
+    CHECK(scan(c, NULL, "pypi-AgEIcHlwaS5vcmcCGnB5cGkub3JnLXRva2Vu ", &sink) == KTW_OK && sink.n == 0);
+    CHECK(scan(c, NULL, "glpat-AbCdEfGhIj0123456789 ", &sink) == KTW_OK && sink.n == 1);
+    r = find_kind(&sink, KTW_KIND_GITLAB_TOKEN);
+    CHECK(r != NULL && r->confidence == KTW_LIKELY && r->offset == 0 && r->length == 26);
+    CHECK(scan(c, NULL, "token glpat-Ab_d-fGhIj0123456789.", &sink) == KTW_OK && sink.n == 1);
+    r = find_kind(&sink, KTW_KIND_GITLAB_TOKEN);
+    CHECK(r != NULL && r->confidence == KTW_LIKELY && r->length == 26);
+    CHECK(scan(c, NULL, "glpat-AbCdEfGhIj0123456789AbCdEfGhIj0123456789xyz.01.0a1b2c3d4", &sink) == KTW_OK);
+    r = find_kind(&sink, KTW_KIND_GITLAB_TOKEN);
+    CHECK(sink.n == 1 && r != NULL && r->confidence == KTW_INDICATOR && r->length == 62);
+    CHECK(scan(c, NULL, "glpat-AbCdEfGhIj012345678 ", &sink) == KTW_OK && sink.n == 0);
+    CHECK(scan(c, NULL, "glpat-AbCdEfGhIj012345678.", &sink) == KTW_OK && sink.n == 0);
+    CHECK(scan(c, NULL, "glpat-AbCdEfGhIj0123456789AbCdEfGhIj0123456789AbCdEfGhIj0123456789AbCdEf", &sink) == KTW_OK &&
+          sink.n == 0);
+    CHECK(scan(c, NULL, "myglpat-AbCdEfGhIj0123456789", &sink) == KTW_OK && sink.n == 0);
 }
 
 static void test_pem_baits(const ktw_catalog_t *c)
@@ -939,6 +984,7 @@ int main(int argc, char **argv)
     test_aws(c);
     test_github(c);
     test_other_tokens(c);
+    test_package_tokens(c);
     test_pem_baits(c);
     test_pem_forms(c);
     test_der_inner(c);

@@ -3,6 +3,9 @@
 #define KTW_AWS_SEEK 240u
 #define KTW_SLACK_MAX 200u
 #define KTW_STRIPE_MAX 247u
+#define KTW_PYPI_MIN 85u
+#define KTW_PYPI_MAX 2048u
+#define KTW_GITLAB_MAX 64u
 
 static const char ktw_base62[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
@@ -14,6 +17,11 @@ static int ktw_alnum(unsigned char c)
 static int ktw_word(unsigned char c)
 {
     return ktw_alnum(c) || c == '_';
+}
+
+static int ktw_b64url(unsigned char c)
+{
+    return ktw_word(c) || c == '-';
 }
 
 static int ktw_upper_digit(unsigned char c)
@@ -102,6 +110,16 @@ static int ktw_slack_ok(const ktw_tok_t *t)
     return !t->fail && t->numsegs >= 2 && t->seglen >= 24 && t->seglen <= 48;
 }
 
+static int ktw_gitlab_done(ktw_scanner_t *s, ktw_tok_t *t)
+{
+    if (t->n == 6 + 20 && !t->fail)
+        return ktw_tok_emit(s, t, KTW_KIND_GITLAB_TOKEN, KTW_LIKELY, KTW_CHECK_FORMAT);
+    if (t->n > 6 + 20)
+        return ktw_tok_emit(s, t, KTW_KIND_GITLAB_TOKEN, KTW_INDICATOR, 0);
+    ktw_tok_free(s, t);
+    return 0;
+}
+
 static int ktw_tok_complete(ktw_scanner_t *s, ktw_tok_t *t)
 {
     switch (t->type) {
@@ -115,6 +133,16 @@ static int ktw_tok_complete(ktw_scanner_t *s, ktw_tok_t *t)
         return ktw_tok_emit(s, t, KTW_KIND_GITHUB_TOKEN, KTW_CONFIRMED, KTW_CHECK_FORMAT | KTW_CHECK_CHECKSUM);
     case KTW_TOK_GITHUB_PAT:
         return ktw_tok_emit(s, t, KTW_KIND_GITHUB_TOKEN, KTW_LIKELY, KTW_CHECK_FORMAT);
+    case KTW_TOK_NPM:
+        if (!ktw_github_ok(t)) {
+            ktw_tok_free(s, t);
+            return 0;
+        }
+        return ktw_tok_emit(s, t, KTW_KIND_NPM_TOKEN, KTW_CONFIRMED, KTW_CHECK_FORMAT | KTW_CHECK_CHECKSUM);
+    case KTW_TOK_PYPI:
+        return ktw_tok_emit(s, t, KTW_KIND_PYPI_TOKEN, KTW_LIKELY, KTW_CHECK_FORMAT);
+    case KTW_TOK_GITLAB:
+        return ktw_gitlab_done(s, t);
     case KTW_TOK_SLACK:
         if (!ktw_slack_ok(t)) {
             ktw_tok_free(s, t);
@@ -228,9 +256,9 @@ static int ktw_fixed_char(ktw_scanner_t *s, ktw_tok_t *t, unsigned char b, uint3
         ktw_tok_free(s, t);
         return 0;
     }
-    if (t->type == KTW_TOK_GITHUB && t->n < 4 + 30)
+    if ((t->type == KTW_TOK_GITHUB || t->type == KTW_TOK_NPM) && t->n < 4 + 30)
         t->crc = ktw_crc32_update(t->crc, b);
-    else if (t->type == KTW_TOK_GITHUB)
+    else if (t->type == KTW_TOK_GITHUB || t->type == KTW_TOK_NPM)
         t->tail6[t->n - 34] = b;
     ktw_tok_push(t, b);
     return 0;
@@ -247,6 +275,44 @@ static int ktw_stripe_char(ktw_scanner_t *s, ktw_tok_t *t, unsigned char b)
         return 0;
     }
     return ktw_tok_complete(s, t);
+}
+
+static int ktw_pypi_char(ktw_scanner_t *s, ktw_tok_t *t, unsigned char b)
+{
+    if (ktw_b64url(b) && t->n < 5 + KTW_PYPI_MAX) {
+        ktw_tok_push(t, b);
+        return 0;
+    }
+    if (ktw_b64url(b) || t->n < 5 + KTW_PYPI_MIN) {
+        ktw_tok_free(s, t);
+        return 0;
+    }
+    return ktw_tok_complete(s, t);
+}
+
+static int ktw_gitlab_char(ktw_scanner_t *s, ktw_tok_t *t, unsigned char b)
+{
+    if (t->phase == 1 && !ktw_b64url(b)) {
+        t->phase = 0;
+        return ktw_tok_complete(s, t);
+    }
+    if (b == '.' && t->phase == 0 && t->n > 6) {
+        t->phase = 1;
+        return 0;
+    }
+    if (!ktw_b64url(b))
+        return ktw_tok_complete(s, t);
+    if (t->phase == 1) {
+        ktw_tok_push(t, '.');
+        t->phase = 0;
+        t->fail = 1;
+    }
+    if (t->n + 1 > 6 + KTW_GITLAB_MAX) {
+        ktw_tok_free(s, t);
+        return 0;
+    }
+    ktw_tok_push(t, b);
+    return 0;
 }
 
 static int ktw_tok_char(ktw_scanner_t *s, ktw_tok_t *t, unsigned char b)
@@ -266,6 +332,12 @@ static int ktw_tok_char(ktw_scanner_t *s, ktw_tok_t *t, unsigned char b)
         return ktw_fixed_char(s, t, b, 4 + 36);
     case KTW_TOK_GITHUB_PAT:
         return ktw_fixed_char(s, t, b, 11 + 22 + 1 + 59);
+    case KTW_TOK_NPM:
+        return ktw_fixed_char(s, t, b, 4 + 36);
+    case KTW_TOK_PYPI:
+        return ktw_pypi_char(s, t, b);
+    case KTW_TOK_GITLAB:
+        return ktw_gitlab_char(s, t, b);
     case KTW_TOK_SLACK:
         return ktw_slack_char(s, t, b);
     default:
@@ -351,6 +423,14 @@ static int ktw_tok_end(ktw_scanner_t *s, ktw_tok_t *t)
         break;
     case KTW_TOK_GITHUB_PAT:
         if (t->n == 11 + 22 + 1 + 59)
+            return ktw_tok_complete(s, t);
+        break;
+    case KTW_TOK_NPM:
+        if (t->n == 4 + 36)
+            return ktw_tok_complete(s, t);
+        break;
+    case KTW_TOK_PYPI:
+        if (t->n >= 5 + KTW_PYPI_MIN)
             return ktw_tok_complete(s, t);
         break;
     default:

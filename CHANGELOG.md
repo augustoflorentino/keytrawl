@@ -4,6 +4,22 @@ Each release lists what changed, what updating means for existing code, and ever
 
 ## Unreleased
 
+## 1.2.0 - 2026-04-30
+
+Package registry and GitLab tokens, in `KTW_GROUP_CLOUD`.
+
+- npm tokens `npm_` (`KTW_KIND_NPM_TOKEN`, "npm-token"): confirmed by their CRC32, the same scheme
+  as GitHub's; a failed checksum reports nothing.
+- PyPI tokens `pypi-` (`KTW_KIND_PYPI_TOKEN`, "pypi-token"): the macaroon must start with the
+  location `pypi.org` and be at least 85 characters; likely.
+- GitLab personal, project and group access tokens `glpat-` (`KTW_KIND_GITLAB_TOKEN`,
+  "gitlab-token"): likely with 20 characters; the longer routable form, up to 64 with a ".", is
+  an indicator, since GitLab does not publish its layout.
+
+Updating: nothing to change; code that lists the kinds it knows must expect kinds 20 to 22.
+
+Security fixes: none.
+
 ## 1.0.0 - 2026-04-22
 
 The caller says what a stream is; the file name no longer decides it.

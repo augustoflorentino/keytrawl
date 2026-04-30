@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(keytrawl VERSION 1.0.0 DESCRIPTION "Streaming secret finder for raw bytes: private keys, cloud tokens and configuration secrets, each validated before it is reported" LANGUAGES C)
+project(keytrawl VERSION 1.2.0 DESCRIPTION "Streaming secret finder for raw bytes: private keys, cloud tokens and configuration secrets, each validated before it is reported" LANGUAGES C)
 
 option(KEYTRAWL_BUILD_TESTS "Build tests" OFF)
 option(KEYTRAWL_BUILD_EXAMPLES "Build examples" OFF)

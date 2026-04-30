@@ -401,7 +401,10 @@ const char *ktw_kind_name(int kind)
                                         "stripe-secret-key",
                                         "wifi-passphrase",
                                         "authorized-key",
-                                        "key-pair"};
+                                        "key-pair",
+                                        "npm-token",
+                                        "pypi-token",
+                                        "gitlab-token"};
 
     if (kind >= KTW_KIND_USER)
         return "user";
