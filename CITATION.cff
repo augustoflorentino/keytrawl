@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If keytrawl is used in a study or report, please cite it."
+type: software
+title: keytrawl
+abstract: "Streaming C library that finds private keys, cloud tokens and Wi-Fi secrets in firmware, binaries and memory dumps, checking each one"
+authors:
+  - family-names: Florentino
+    given-names: Augusto
+license: MIT
+repository-code: "https://github.com/augustoflorentino/keytrawl"
+keywords:
+  - c
+  - c99
+  - library
+  - secrets
+  - secret-scanning
+  - security
+  - streaming
+  - pem
