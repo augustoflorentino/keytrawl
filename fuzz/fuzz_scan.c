@@ -43,12 +43,12 @@ static ktw_catalog_t *catalog;
 static ktw_scanner_t *scanner;
 static const char *const names[] = {NULL, "/etc/config/wireless", "hostapd.conf", "authorized_keys", "libc.so.6"};
 
-static void run(const uint8_t *data, size_t size, const char *name, unsigned seed, log_t *l)
+static void run(const uint8_t *data, size_t size, const char *name, unsigned stream, unsigned seed, log_t *l)
 {
     size_t at = 0;
 
     l->n = 0;
-    if (ktw_scanner_reset(scanner, name, name == NULL ? 0 : strlen(name), seed & 1u) != KTW_OK)
+    if (ktw_scanner_reset(scanner, name, name == NULL ? 0 : strlen(name), stream) != KTW_OK)
         abort();
     while (at < size) {
         size_t piece = size - at;
@@ -69,6 +69,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     static log_t whole, cut;
     const char *name;
+    unsigned stream;
 
     if (catalog == NULL) {
         if (ktw_catalog_create(KTW_GROUP_ALL, NULL, NULL, NULL, &catalog) != KTW_OK ||
@@ -80,8 +81,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     if (size < 2)
         return 0;
     name = names[data[0] % (sizeof(names) / sizeof(names[0]))];
-    run(data + 2, size - 2, name, 0, &whole);
-    run(data + 2, size - 2, name, 1u + data[1], &cut);
+    stream = data[0] / (sizeof(names) / sizeof(names[0])) % 2 == 0 ? KTW_STREAM_AUTO : KTW_STREAM_BINARY;
+    run(data + 2, size - 2, name, stream, 0, &whole);
+    run(data + 2, size - 2, name, stream, 1u + data[1], &cut);
     if (whole.n != cut.n || memcmp(whole.fp, cut.fp, sizeof(whole.fp[0]) * (whole.n < MAX_FINDINGS ? whole.n : MAX_FINDINGS)) != 0)
         abort();
     return 0;
