@@ -404,7 +404,8 @@ const char *ktw_kind_name(int kind)
                                         "key-pair",
                                         "npm-token",
                                         "pypi-token",
-                                        "gitlab-token"};
+                                        "gitlab-token",
+                                        "wifi-psk"};
 
     if (kind >= KTW_KIND_USER)
         return "user";

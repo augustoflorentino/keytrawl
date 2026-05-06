@@ -58,6 +58,7 @@ extern "C" {
 #define KTW_KIND_NPM_TOKEN 20
 #define KTW_KIND_PYPI_TOKEN 21
 #define KTW_KIND_GITLAB_TOKEN 22
+#define KTW_KIND_WIFI_PSK 23
 #define KTW_KIND_USER 1024
 
 #define KTW_ALG_NONE 0

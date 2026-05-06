@@ -244,10 +244,10 @@ static void test_names(void)
 {
     int i;
 
-    for (i = KTW_KIND_PEM_RSA; i <= KTW_KIND_GITLAB_TOKEN; i++)
+    for (i = KTW_KIND_PEM_RSA; i <= KTW_KIND_WIFI_PSK; i++)
         CHECK(strcmp(ktw_kind_name(i), "unknown") != 0);
     CHECK(strcmp(ktw_kind_name(0), "unknown") == 0);
-    CHECK(strcmp(ktw_kind_name(KTW_KIND_GITLAB_TOKEN + 1), "unknown") == 0);
+    CHECK(strcmp(ktw_kind_name(KTW_KIND_WIFI_PSK + 1), "unknown") == 0);
     CHECK(strcmp(ktw_kind_name(-1), "unknown") == 0);
     CHECK(strcmp(ktw_kind_name(KTW_KIND_USER + 5), "user") == 0);
     for (i = KTW_ALG_NONE; i < KTW_ALG_UNKNOWN; i++)
@@ -628,6 +628,31 @@ static void test_wifi(const ktw_catalog_t *c)
                &sink) == KTW_OK && sink.n == 0);
 }
 
+#define PSK64 "0123456789abcdefABCDEF0123456789abcdefABCDEF0123456789abcdef0123"
+
+static void test_wifi_psk(const ktw_catalog_t *c)
+{
+    const rec_t *r;
+
+    CHECK(scan(c, "hostapd.conf", "ssid=x\nwpa_psk=" PSK64 "\n", &sink) == KTW_OK && sink.n == 1);
+    r = find_kind(&sink, KTW_KIND_WIFI_PSK);
+    CHECK(r != NULL && r->confidence == KTW_LIKELY && r->line == 2 && r->offset == 15 && r->length == 64);
+    CHECK(r != NULL && strstr(r->evidence, "456789") == NULL);
+    CHECK(scan(c, "wpa_supplicant.conf", "network={\n\tpsk=" PSK64 "\n}\n", &sink) == KTW_OK && sink.n == 1);
+    CHECK(sink.n == 1 && sink.recs[0].kind == KTW_KIND_WIFI_PSK);
+    CHECK(scan(c, "wpa_supplicant.conf", "\tpsk=\"" PSK64 "\"\n", &sink) == KTW_OK && sink.n == 0);
+    CHECK(scan(c, "/etc/config/wireless", "\toption key '" PSK64 "'\n", &sink) == KTW_OK && sink.n == 1);
+    CHECK(sink.n == 1 && sink.recs[0].kind == KTW_KIND_WIFI_PSK);
+    CHECK(scan(c, "hostapd.conf", "wpa_passphrase=" PSK64 "\n", &sink) == KTW_OK && sink.n == 0);
+    CHECK(scan(c, "hostapd.conf", "wpa_psk=" PSK64 "0\n", &sink) == KTW_OK && sink.n == 0);
+    CHECK(scan(c, "hostapd.conf", "wpa_psk=g123456789abcdefABCDEF0123456789abcdefABCDEF0123456789abcdef0123\n", &sink) ==
+              KTW_OK &&
+          sink.n == 0);
+    CHECK(scan(c, "hostapd.conf", "wpa_psk=sup3rS3cretPass\n", &sink) == KTW_OK && sink.n == 0);
+    CHECK(scan(c, "hostapd.conf", "wpa_pskx=" PSK64 "\n", &sink) == KTW_OK && sink.n == 0);
+    CHECK(scan(c, "notes.txt", "wpa_psk=" PSK64 "\n", &sink) == KTW_OK && sink.n == 0);
+}
+
 #define ED_PUB "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExJeoA/ZHc5NgshcUXHRYuKDCzlpGSQHZ1329ciZfSP"
 
 static void test_authorized_keys(const ktw_catalog_t *c)
@@ -990,6 +1015,7 @@ int main(int argc, char **argv)
     test_der_inner(c);
     test_der_v2(c);
     test_wifi(c);
+    test_wifi_psk(c);
     test_authorized_keys(c);
     test_user_patterns();
     test_dropped();

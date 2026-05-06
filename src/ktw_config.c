@@ -14,7 +14,7 @@ enum {
     KTW_W_DEAD
 };
 
-static const char *const ktw_wifi_kw[3] = {"option", "wpa_passphrase", "psk"};
+static const char *const ktw_wifi_kw[4] = {"option", "wpa_passphrase", "psk", "wpa_psk"};
 
 static int ktw_is_space(unsigned char c)
 {
@@ -118,6 +118,8 @@ static void ktw_wifi_char(ktw_cfg_t *c, unsigned char b, uint64_t abs)
         c->state = (b == 'o' || b == 'w' || b == 'p') ? KTW_W_KW : KTW_W_DEAD;
         return;
     case KTW_W_KW:
+        if (c->kw == 1 && c->idx == 5 && b == 's')
+            c->kw = 3;
         if ((unsigned char)ktw_wifi_kw[c->kw][c->idx] != b) {
             c->state = KTW_W_DEAD;
             return;
@@ -168,6 +170,27 @@ static int ktw_wifi_capture(const ktw_cfg_t *c, uint32_t *out_g, int *out_tok)
     return g <= room && g + c->t <= 63;
 }
 
+static int ktw_wifi_hex64(const ktw_cfg_t *c)
+{
+    uint32_t i;
+
+    if (c->t != 64 || (c->state != KTW_W_TOK && c->state != KTW_W_TAIL))
+        return 0;
+    for (i = 0; i < 64; i++)
+        if (!((c->tok[i] >= '0' && c->tok[i] <= '9') || ((c->tok[i] | 0x20) >= 'a' && (c->tok[i] | 0x20) <= 'f')))
+            return 0;
+    return 1;
+}
+
+static int ktw_wifi_psk(ktw_scanner_t *s)
+{
+    ktw_cfg_t *c = &s->cfg;
+
+    ktw_mask(s->finding.evidence, sizeof(s->finding.evidence), c->tok, 64, c->tok + 60, 4, 64);
+    return ktw_emit(s, KTW_KIND_WIFI_PSK, NULL, KTW_ALG_NONE, KTW_LIKELY, KTW_CHECK_CONTEXT | KTW_CHECK_FORMAT, 0,
+                    c->tok_start, 64, c->line);
+}
+
 static int ktw_wifi_eol(ktw_scanner_t *s, uint64_t abs)
 {
     ktw_cfg_t *c = &s->cfg;
@@ -175,6 +198,10 @@ static int ktw_wifi_eol(ktw_scanner_t *s, uint64_t abs)
     uint32_t g, len;
     int use_tok;
 
+    if (ktw_wifi_hex64(c) && c->kw != 1 && !(c->kw == 2 && c->quote_at_s))
+        return ktw_wifi_psk(s);
+    if (c->kw == 3)
+        return 0;
     if (c->state == KTW_W_SEP)
         c->rs_pos = abs;
     else if (c->state != KTW_W_U0 && c->state != KTW_W_TOK && c->state != KTW_W_TAIL)

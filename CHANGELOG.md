@@ -4,6 +4,18 @@ Each release lists what changed, what updating means for existing code, and ever
 
 ## Unreleased
 
+## 1.4.0 - 2026-05-06
+
+- Raw WPA pre-shared keys (`KTW_KIND_WIFI_PSK`, "wifi-psk"): exactly 64 hex digits in `wpa_psk`
+  of hostapd.conf, in an unquoted `psk` of wpa_supplicant.conf, or in `option key` of
+  `/etc/config/wireless`. A quoted `psk` and `wpa_passphrase` stay passphrases of 8 to 63
+  characters. Same files and stream names as the passphrases; likely.
+- Passphrase lines are matched as before.
+
+Updating: nothing to change; code that lists the kinds it knows must expect kind 23.
+
+Security fixes: none.
+
 ## 1.2.0 - 2026-04-30
 
 Package registry and GitLab tokens, in `KTW_GROUP_CLOUD`.

@@ -31,6 +31,7 @@ when its structure checks out; what is only shaped like a secret is reported as 
 | PyPI `pypi-` | the fixed start of a macaroon for `pypi.org` and at least 85 base64url characters ([token scanning](https://warehouse.pypa.io/development/token-scanning.html)) | likely |
 | GitLab `glpat-` | 20 characters of `[0-9A-Za-z_-]` ([token prefixes](https://docs.gitlab.com/security/tokens/)); the longer routable form has no published layout | likely, indicator when routable |
 | Wi-Fi passphrase | in `/etc/config/wireless`, `hostapd*.conf`, `wpa_supplicant*.conf`: `option key`, `wpa_passphrase`, `psk` | likely |
+| Raw Wi-Fi key | in the same files: 64 hex digits in `wpa_psk`, unquoted `psk` or `option key` | likely |
 | `authorized_keys` line | key type, base64 and the SSH wire format of the public key | confirmed when valid, indicator otherwise |
 | Key pairs: a public key whose private key is in the same stream | the public value (RSA n, DSA y, EC point, Ed25519 key) of PEM `PUBLIC KEY`, `RSA PUBLIC KEY`, `CERTIFICATE`, DER SubjectPublicKeyInfo and OpenSSH lines, equal to that of a private key; computed from PKCS#8 Ed25519 and DSA keys, which do not carry it | confirmed |
 | Your own literals | your validator callback decides | yours |
