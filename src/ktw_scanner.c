@@ -100,6 +100,11 @@ int ktw_scanner_reset(ktw_scanner_t *s, const char *name, size_t name_len, unsig
     memset(s->pub, 0, sizeof(s->pub));
     memset(s->ident, 0, sizeof(s->ident));
     s->ident_next = 0;
+    for (i = 0; i < KTW_DSA_PARMS; i++)
+        s->dparm[i].gen = 0;
+    s->dparm_next = 0;
+    s->dparm_gen = 0;
+    s->derive_spent = 0;
     for (i = 0; i < KTW_TOK_SLOTS; i++)
         s->tok[i].buf = bufs[i];
     s->state = s->cat->root;

@@ -90,6 +90,20 @@ static void ktw_sha256_block(ktw_sha256_t *c)
         c->h[i] += v[i];
 }
 
+void ktw_sha256_value(const unsigned char *v, size_t n, unsigned char out[32])
+{
+    ktw_sha256_t c;
+
+    while (n > 1 && *v == 0) {
+        v++;
+        n--;
+    }
+    ktw_sha256_init(&c);
+    while (n-- > 0)
+        ktw_sha256_byte(&c, *v++);
+    ktw_sha256_final(&c, out);
+}
+
 void ktw_sha256_init(ktw_sha256_t *c)
 {
     memcpy(c->h, ktw_h256, sizeof(c->h));

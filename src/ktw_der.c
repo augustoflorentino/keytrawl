@@ -527,29 +527,11 @@ static int ktw_der_sha(ktw_sha256_t *c, int have, unsigned char out[32])
 {
     if (have)
         ktw_sha256_final(c, out);
-    return have;
-}
-
-static int ktw_der_bytes(const unsigned char *v, size_t n, unsigned char out[32])
-{
-    ktw_sha256_t c;
-
-    while (n > 1 && *v == 0) {
-        v++;
-        n--;
-    }
-    ktw_sha256_init(&c);
-    while (n-- > 0)
-        ktw_sha256_byte(&c, *v++);
-    ktw_sha256_final(&c, out);
-    return 1;
+    return have ? KTW_ID_NOW : 0;
 }
 
 static int ktw_der_pkcs8_identity(ktw_der_t *d, int *alg, unsigned char out[32])
 {
-    unsigned char y[KTW_DSA_P_MAX];
-    size_t ylen;
-
     switch (d->alg) {
     case KTW_ALG_RSA:
     case KTW_ALG_RSA_PSS:
@@ -562,15 +544,14 @@ static int ktw_der_pkcs8_identity(ktw_der_t *d, int *alg, unsigned char out[32])
         if (!(d->got & KTW_GOT_X) || d->xlen != 32)
             return 0;
         *alg = KTW_ALG_ED25519;
-        ktw_ed25519_public(d->kx, y);
-        return ktw_der_bytes(y, 32, out);
+        memcpy(out, d->kx, 32);
+        return KTW_ID_LATER;
     case KTW_ALG_DSA:
         if ((d->got & (KTW_GOT_P | KTW_GOT_G | KTW_GOT_X)) != (KTW_GOT_P | KTW_GOT_G | KTW_GOT_X))
             return 0;
-        if (!ktw_dsa_public(d->kp, d->plen, d->kg, d->glen, d->kx, d->xlen, y, &ylen))
-            return 0;
         *alg = KTW_ALG_DSA;
-        return ktw_der_bytes(y, ylen, out);
+        memcpy(out, d->kx, d->xlen);
+        return KTW_ID_LATER;
     default:
         return 0;
     }
@@ -614,16 +595,13 @@ static int ktw_der_report(ktw_scanner_t *s, ktw_derslot_t *w)
     unsigned checks = KTW_CHECK_STRUCTURE | (w->der.aligned ? KTW_CHECK_ALIGNED : 0);
     unsigned flags = kind == KTW_KIND_DER_PKCS8_ENCRYPTED ? KTW_FLAG_ENCRYPTED : 0;
 
-    unsigned char id[32];
-    int idalg;
-
     snprintf(s->finding.evidence, sizeof(s->finding.evidence), "DER %s (%llu bytes)", ktw_kind_name(kind),
              (unsigned long long)(w->end - w->start));
     if (ktw_emit(s, kind, NULL, w->der.alg, KTW_CONFIRMED, checks, flags, w->start, w->end - w->start, 0))
         return 1;
-    if (!(s->cat->groups & KTW_GROUP_PAIRS) || !ktw_der_identity(&w->der, &idalg, id))
+    if (!(s->cat->groups & KTW_GROUP_PAIRS))
         return 0;
-    return ktw_pair_add(s, 0, idalg, id, kind, 0, w->start, w->end - w->start);
+    return ktw_pair_private(s, &w->der, kind, 0, w->start, w->end - w->start);
 }
 
 static int ktw_der_resolve(ktw_scanner_t *s)

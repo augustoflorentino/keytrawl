@@ -24,6 +24,11 @@
 #define KTW_DSA_X_MAX 32
 #define KTW_PUB_SLOTS 4
 #define KTW_IDENTS 32
+#define KTW_DSA_PARMS 2
+#define KTW_DERIVE_FREE 32
+#define KTW_DERIVE_BYTES 131072u
+#define KTW_ID_NOW 1
+#define KTW_ID_LATER 2
 
 enum { KTW_H_PEM = 1, KTW_H_DER, KTW_H_TOKEN, KTW_H_USER, KTW_H_SPKI, KTW_H_SSHPUB };
 enum { KTW_SCHEMA_TRAD = 1, KTW_SCHEMA_SEC1, KTW_SCHEMA_PKCS8, KTW_SCHEMA_EPKI };
@@ -251,11 +256,23 @@ typedef struct {
     uint8_t pub;
     uint8_t alg;
     uint8_t encrypted;
+    uint8_t later;
+    uint8_t xlen;
+    uint8_t parm;
+    uint32_t parm_gen;
     int kind;
     uint64_t start;
     uint64_t len;
     unsigned char digest[32];
 } ktw_ident_t;
+
+typedef struct {
+    uint32_t gen;
+    uint16_t plen;
+    uint16_t glen;
+    unsigned char p[KTW_DSA_P_MAX];
+    unsigned char g[KTW_DSA_P_MAX];
+} ktw_dsaparm_t;
 
 typedef struct {
     uint8_t used;
@@ -344,6 +361,10 @@ struct ktw_scanner {
     ktw_ident_t ident[KTW_IDENTS];
     unsigned ident_next;
     uint64_t pair_at;
+    ktw_dsaparm_t dparm[KTW_DSA_PARMS];
+    unsigned dparm_next;
+    uint32_t dparm_gen;
+    uint64_t derive_spent;
     ktw_finding_t finding;
 };
 
@@ -382,6 +403,8 @@ KTW_INTERNAL void ktw_spki_put(ktw_spki_t *k, unsigned char b);
 KTW_INTERNAL int ktw_spki_digest(ktw_spki_t *k, int *alg, unsigned char out[32]);
 KTW_INTERNAL int ktw_pair_add(ktw_scanner_t *s, int pub, int alg, const unsigned char digest[32], int kind,
                               int encrypted, uint64_t start, uint64_t len);
+KTW_INTERNAL int ktw_pair_private(ktw_scanner_t *s, ktw_der_t *d, int kind, int encrypted, uint64_t start,
+                                  uint64_t len);
 KTW_INTERNAL int ktw_pub_spawn(ktw_scanner_t *s, const ktw_pattern_t *p, uint64_t end);
 KTW_INTERNAL int ktw_pub_step(ktw_scanner_t *s, unsigned char b);
 KTW_INTERNAL int ktw_pub_finish(ktw_scanner_t *s);
@@ -396,6 +419,7 @@ KTW_INTERNAL int ktw_tok_finish(ktw_scanner_t *s);
 KTW_INTERNAL uint32_t ktw_crc32_update(uint32_t crc, unsigned char b);
 
 KTW_INTERNAL void ktw_sha256_init(ktw_sha256_t *c);
+KTW_INTERNAL void ktw_sha256_value(const unsigned char *v, size_t n, unsigned char out[32]);
 KTW_INTERNAL void ktw_sha256_byte(ktw_sha256_t *c, unsigned char b);
 KTW_INTERNAL void ktw_sha256_final(ktw_sha256_t *c, unsigned char out[32]);
 KTW_INTERNAL void ktw_sha512_short(const unsigned char *data, size_t len, unsigned char out[64]);

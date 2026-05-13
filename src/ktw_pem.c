@@ -436,10 +436,11 @@ static int ktw_pem_identity(ktw_scanner_t *s, ktw_pem_t *p, unsigned checks, uns
 
     if (!(s->cat->groups & KTW_GROUP_PAIRS) || !(checks & KTW_CHECK_STRUCTURE))
         return 0;
-    if (p->label == KTW_L_OPENSSH)
-        ok = ktw_pubid_digest(&p->ssh.id, &alg, id);
-    else
-        ok = !(flags & KTW_FLAG_ENCRYPTED) && ktw_der_identity(&p->der, &alg, id);
+    if (p->label != KTW_L_OPENSSH)
+        return (flags & KTW_FLAG_ENCRYPTED) ? 0
+                                            : ktw_pair_private(s, &p->der, ktw_label_kind[p->label], 0, p->start,
+                                                               p->end - p->start);
+    ok = ktw_pubid_digest(&p->ssh.id, &alg, id);
     if (!ok)
         return 0;
     return ktw_pair_add(s, 0, alg, id, ktw_label_kind[p->label], (flags & KTW_FLAG_ENCRYPTED) != 0, p->start,

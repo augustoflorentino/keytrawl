@@ -309,36 +309,163 @@ static int ktw_pair_emit(ktw_scanner_t *s, const ktw_ident_t *pub, const ktw_ide
                     priv->encrypted ? KTW_FLAG_ENCRYPTED : 0, pub->start, pub->len, 0);
 }
 
+static uint64_t ktw_derive_cost(const ktw_scanner_t *s, const ktw_ident_t *e)
+{
+    uint64_t q;
+
+    if (e->alg == KTW_ALG_ED25519)
+        return 1;
+    q = (s->dparm[e->parm].plen + 127u) / 128u;
+    return q * q;
+}
+
+static int ktw_derive_afford(ktw_scanner_t *s, uint64_t cost)
+{
+    if (s->derive_spent + cost > KTW_DERIVE_FREE + s->now / KTW_DERIVE_BYTES)
+        return 0;
+    s->derive_spent += cost;
+    return 1;
+}
+
+static void ktw_ident_compute(ktw_scanner_t *s, ktw_ident_t *e)
+{
+    const ktw_dsaparm_t *m = &s->dparm[e->parm];
+    unsigned char y[KTW_DSA_P_MAX];
+    size_t ylen = 32;
+
+    if (e->alg == KTW_ALG_DSA && m->gen != e->parm_gen) {
+        e->used = 0;
+        return;
+    }
+    if (!ktw_derive_afford(s, ktw_derive_cost(s, e)))
+        return;
+    if (e->alg == KTW_ALG_ED25519)
+        ktw_ed25519_public(e->digest, y);
+    else if (!ktw_dsa_public(m->p, m->plen, m->g, m->glen, e->digest, e->xlen, y, &ylen))
+        e->used = 0;
+    if (e->used)
+        ktw_sha256_value(y, ylen, e->digest);
+    e->later = 0;
+}
+
+static int ktw_ident_has(const ktw_scanner_t *s, int pub, int alg)
+{
+    unsigned k;
+
+    for (k = 0; k < KTW_IDENTS; k++)
+        if (s->ident[k].used && !s->ident[k].later && s->ident[k].pub == pub && s->ident[k].alg == alg)
+            return 1;
+    return 0;
+}
+
+static void ktw_ident_settle(ktw_scanner_t *s, int alg)
+{
+    unsigned k;
+
+    for (k = 1; k <= KTW_IDENTS; k++) {
+        ktw_ident_t *e = &s->ident[(s->ident_next + KTW_IDENTS - k) % KTW_IDENTS];
+
+        if (e->used && e->later && e->alg == alg)
+            ktw_ident_compute(s, e);
+    }
+}
+
+static unsigned ktw_dsaparm_put(ktw_scanner_t *s, const ktw_der_t *d)
+{
+    ktw_dsaparm_t *m;
+    unsigned i;
+
+    for (i = 0; i < KTW_DSA_PARMS; i++) {
+        m = &s->dparm[i];
+        if (m->gen != 0 && m->plen == d->plen && m->glen == d->glen && memcmp(m->p, d->kp, d->plen) == 0 &&
+            memcmp(m->g, d->kg, d->glen) == 0)
+            return i;
+    }
+    i = s->dparm_next;
+    s->dparm_next = (i + 1) % KTW_DSA_PARMS;
+    m = &s->dparm[i];
+    m->gen = ++s->dparm_gen;
+    m->plen = (uint16_t)d->plen;
+    m->glen = (uint16_t)d->glen;
+    memcpy(m->p, d->kp, d->plen);
+    memcpy(m->g, d->kg, d->glen);
+    return i;
+}
+
+static const ktw_ident_t *ktw_pair_find(const ktw_scanner_t *s, const ktw_ident_t *me)
+{
+    unsigned k;
+
+    for (k = 1; k <= KTW_IDENTS; k++) {
+        const ktw_ident_t *e = &s->ident[(s->ident_next + KTW_IDENTS - k) % KTW_IDENTS];
+
+        if (e->used && !e->later && e->pub != me->pub && e->alg == me->alg && memcmp(e->digest, me->digest, 32) == 0)
+            return e;
+    }
+    return NULL;
+}
+
+static int ktw_pair_record(ktw_scanner_t *s, const ktw_ident_t *me)
+{
+    const ktw_ident_t *found = me->later ? NULL : ktw_pair_find(s, me);
+    ktw_ident_t other;
+
+    if (found != NULL)
+        other = *found;
+    s->ident[s->ident_next % KTW_IDENTS] = *me;
+    s->ident_next = (s->ident_next + 1) % KTW_IDENTS;
+    if (found == NULL)
+        return 0;
+    return me->pub ? ktw_pair_emit(s, me, &other) : ktw_pair_emit(s, &other, me);
+}
+
+static void ktw_ident_init(ktw_ident_t *me, int pub, int alg, int kind, int encrypted, uint64_t start, uint64_t len)
+{
+    memset(me, 0, sizeof(*me));
+    me->used = 1;
+    me->pub = (uint8_t)(pub != 0);
+    me->alg = (uint8_t)alg;
+    me->encrypted = (uint8_t)(encrypted != 0);
+    me->kind = kind;
+    me->start = start;
+    me->len = len;
+}
+
 int ktw_pair_add(ktw_scanner_t *s, int pub, int alg, const unsigned char digest[32], int kind, int encrypted,
                  uint64_t start, uint64_t len)
 {
-    ktw_ident_t me, other, *slot;
-    int found = 0;
-    unsigned k;
+    ktw_ident_t me;
 
-    for (k = 1; k <= KTW_IDENTS && !found; k++) {
-        const ktw_ident_t *e = &s->ident[(s->ident_next + KTW_IDENTS - k) % KTW_IDENTS];
-
-        if (e->used && e->pub != (pub != 0) && e->alg == alg && memcmp(e->digest, digest, 32) == 0) {
-            other = *e;
-            found = 1;
-        }
-    }
-    memset(&me, 0, sizeof(me));
-    me.used = 1;
-    me.pub = (uint8_t)(pub != 0);
-    me.alg = (uint8_t)alg;
-    me.encrypted = (uint8_t)(encrypted != 0);
-    me.kind = kind;
-    me.start = start;
-    me.len = len;
+    ktw_ident_init(&me, pub, alg, kind, encrypted, start, len);
     memcpy(me.digest, digest, 32);
-    slot = &s->ident[s->ident_next % KTW_IDENTS];
-    *slot = me;
-    s->ident_next = (s->ident_next + 1) % KTW_IDENTS;
-    if (!found)
+    if (pub)
+        ktw_ident_settle(s, alg);
+    return ktw_pair_record(s, &me);
+}
+
+int ktw_pair_private(ktw_scanner_t *s, ktw_der_t *d, int kind, int encrypted, uint64_t start, uint64_t len)
+{
+    ktw_ident_t me;
+    int alg, how = 0;
+
+    ktw_ident_init(&me, 0, 0, kind, encrypted, start, len);
+    how = ktw_der_identity(d, &alg, me.digest);
+    if (how == 0)
         return 0;
-    return pub ? ktw_pair_emit(s, &me, &other) : ktw_pair_emit(s, &other, &me);
+    me.alg = (uint8_t)alg;
+    if (how == KTW_ID_LATER) {
+        me.later = 1;
+        me.xlen = (uint8_t)(alg == KTW_ALG_DSA ? d->xlen : 32);
+        if (alg == KTW_ALG_DSA) {
+            me.parm = (uint8_t)ktw_dsaparm_put(s, d);
+            me.parm_gen = s->dparm[me.parm].gen;
+        }
+        if (ktw_ident_has(s, 1, alg))
+            ktw_ident_compute(s, &me);
+        if (!me.used)
+            return 0;
+    }
+    return ktw_pair_record(s, &me);
 }
 
 static void ktw_pub_free(ktw_scanner_t *s, ktw_pubslot_t *w)

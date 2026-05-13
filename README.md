@@ -45,7 +45,9 @@ volume, a kernel, a slice of a memory dump). Encrypted keys carry
 A key pair is the sign of a factory key: every unit ships the same private key, and the public
 half shows what it is used for. The finding points at the public key, and
 `ktw_finding_pair_offset` at the private one. The scanner remembers the last 32 keys of a stream;
-a pair farther apart than that is not seen. Encrypted PKCS#8 and legacy encrypted PEM keys cannot
+a pair farther apart than that is not seen. PKCS#8 Ed25519 and DSA keys have their public value
+computed only when a public key of their algorithm is among those 32, at most 32 computations at
+once and one more every 128 KB of stream, so a stream packed with keys cannot slow the scan. Encrypted PKCS#8 and legacy encrypted PEM keys cannot
 be paired; encrypted OpenSSH keys can, since their public key is in clear.
 
 The evidence never holds the secret: at most its first 4 and last 4 bytes (`AKIA…MPLE`).
@@ -88,7 +90,7 @@ Conventions:
 - what `ktw_x_create` returns is released only by `ktw_x_destroy`, which accepts `NULL`
 - functions never take ownership of their arguments; returned pointers belong to the library
 - pass your own allocator to the create functions, or `NULL` for `malloc`/`free`
-- `ktw_feed` and `ktw_finish` never allocate; a scanner holds about 22 KB whatever the input size
+- `ktw_feed` and `ktw_finish` never allocate; a scanner holds about 24 KB whatever the input size
 
 ## Numbers
 

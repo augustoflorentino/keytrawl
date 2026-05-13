@@ -899,6 +899,55 @@ static size_t pairs_found(const ktw_catalog_t *c, const pair_t *e, const unsigne
     return n;
 }
 
+static int append_key(unsigned char *buf, size_t cap, size_t *n, const char *file)
+{
+    size_t len;
+    unsigned char *key = load_key(file, &len);
+    int ok = key != NULL && *n + len <= cap;
+
+    if (ok) {
+        memcpy(buf + *n, key, len);
+        *n += len;
+    }
+    free(key);
+    return ok;
+}
+
+static size_t count_kind(const sink_t *k, int kind)
+{
+    size_t i, n = 0;
+
+    for (i = 0; i < k->n; i++)
+        n += k->recs[i].kind == kind;
+    return n;
+}
+
+static void test_derive_budget(const ktw_catalog_t *c)
+{
+    static unsigned char buf[300000];
+    size_t n = 0, i;
+    int ok = 1;
+
+    for (i = 0; i < 32; i++)
+        ok &= append_key(buf, sizeof(buf), &n, "ed25519-2.p8.der");
+    ok &= append_key(buf, sizeof(buf), &n, "pub/ed25519-2.spki.der");
+    ok &= append_key(buf, sizeof(buf), &n, "ed25519-1.p8.der");
+    ok &= append_key(buf, sizeof(buf), &n, "pub/ed25519-1.spki.der");
+    CHECK(ok && scan_chunked(c, NULL, buf, n, 4096, 0, &sink) == KTW_OK && count_kind(&sink, KTW_KIND_KEY_PAIR) == 1);
+    memset(buf + n, 0, 140000);
+    n += 140000;
+    ok &= append_key(buf, sizeof(buf), &n, "pub/ed25519-1.spki.der");
+    CHECK(ok && scan_chunked(c, NULL, buf, n, 4096, 0, &sink) == KTW_OK && count_kind(&sink, KTW_KIND_KEY_PAIR) == 2);
+    n = 0;
+    ok = append_key(buf, sizeof(buf), &n, "dsa1024-1.p8.der") && append_key(buf, sizeof(buf), &n, "dsa1024-2.p8.der");
+    i = n;
+    ok &= append_key(buf, sizeof(buf), &n, "pub/dsa1024-1.spki.der");
+    CHECK(ok && scan_chunked(c, NULL, buf, n, 4096, 0, &sink) == KTW_OK && count_kind(&sink, KTW_KIND_KEY_PAIR) == 1);
+    n = i;
+    ok &= append_key(buf, sizeof(buf), &n, "dsa1024-3.p8.der") && append_key(buf, sizeof(buf), &n, "pub/dsa1024-1.spki.der");
+    CHECK(ok && scan_chunked(c, NULL, buf, n, 4096, 0, &sink) == KTW_OK && count_kind(&sink, KTW_KIND_KEY_PAIR) == 0);
+}
+
 static void test_pairs(const ktw_catalog_t *c)
 {
     static pair_t e[PAIRS_MAX];
@@ -1021,6 +1070,7 @@ int main(int argc, char **argv)
     test_dropped();
     test_m2(c, argc > 1 ? argv[1] : argv[0]);
     test_pairs(c);
+    test_derive_budget(c);
     test_m5(c);
     ktw_catalog_destroy(c);
     if (failures != 0) {

@@ -4,6 +4,26 @@ Each release lists what changed, what updating means for existing code, and ever
 
 ## Unreleased
 
+## 1.4.1 - 2026-05-15
+
+- Fixed: a stream packed with PKCS#8 Ed25519 or DSA keys scanned at about 88 KB/s. Since 0.2.0
+  the public value of each such key was computed as soon as the key was read, at 0.4 to 4 ms a
+  key; 1 GB of 48-byte Ed25519 keys took about 3 hours.
+- The public value is now computed only when a public key of the same algorithm is among the
+  last 32 keys of the stream, and within a budget: 32 units at once, one more every 128 KB of
+  stream. Ed25519 costs 1 unit, DSA (p bytes / 128) squared. Worst case measured at 177 MB/s
+  for Ed25519 and 220 MB/s for DSA 3072, against 88 KB/s before.
+- A key over the budget is not paired. `ktw_scanner_dropped` does not count it, since a key not
+  computed is not a finding left out: it may have no pair at all. Ordinary files stay far below
+  the budget.
+- The DSA parameters of keys waiting for their computation are kept for the last 2 parameter
+  sets; a key whose set was replaced pairs with nothing.
+- A scanner holds 23.8 KB, was 22 KB.
+
+Updating: nothing to change.
+
+Security fixes: the slow scan above, reachable by any input to the scan.
+
 ## 1.4.0 - 2026-05-06
 
 - Raw WPA pre-shared keys (`KTW_KIND_WIFI_PSK`, "wifi-psk"): exactly 64 hex digits in `wpa_psk`
