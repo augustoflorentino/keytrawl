@@ -34,7 +34,7 @@ if [ "$base_soname" != "$soname" ]; then
 fi
 
 set +e
-abidiff --no-added-syms "$baseline" "$lib"
+abidiff --headers-dir1 "$root/include" --headers-dir2 "$root/include" --no-added-syms "$baseline" "$lib"
 status=$?
 set -e
 if (( status & 3 )); then
