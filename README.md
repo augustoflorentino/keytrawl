@@ -7,15 +7,17 @@
   </picture>
 </p>
 
-Streaming secret finder for raw bytes: private keys, cloud tokens and configuration secrets, each
-validated before it is reported.
+A secret finder for raw bytes, written in C. Firmware images, executables, memory dumps and disk
+images go in, in pieces of any size; private keys, cloud tokens and configuration secrets come
+out, each one checked before it is reported. Every pattern runs in a single Aho-Corasick pass, a
+secret cut between two pieces is still found, and something that only looks like a secret is
+reported as an indicator, not as a finding.
 
-keytrawl looks at bytes, not at text files: firmware images, executables, memory dumps, disk
-images. It runs every pattern in one pass of an Aho-Corasick automaton, takes the input in pieces
-of any size, and finds a secret even when it straddles two pieces. A finding is confirmed only
-when its structure checks out; what is only shaped like a secret is reported as an indicator.
+The picture above is the real output of [`examples/keytrawl.c`](examples/keytrawl.c), fed in
+4 KiB pieces: a key and its certificate hidden in a firmware blob, router configuration, an
+`.env` file, and the test vectors gnutls carries in its own library.
 
-## What it finds
+## Detectors
 
 | Kind | How it is checked | Confidence |
 |---|---|---|
@@ -52,47 +54,40 @@ be paired; encrypted OpenSSH keys can, since their public key is in clear.
 
 The evidence never holds the secret: at most its first 4 and last 4 bytes (`AKIA…MPLE`).
 
-## Usage
+## Feeding it
+
+A catalog is built once and is read-only after `ktw_catalog_compile`; each stream or thread gets
+its own scanner. The name passed to `ktw_scanner_reset` turns on the Wi-Fi and `authorized_keys`
+rules, and `KTW_STREAM_BINARY` marks an executable the ELF check would not recognise. A callback
+that returns nonzero stops the scan.
 
 ```c
 static int print_finding(void *ctx, const ktw_finding_t *f)
 {
     printf("%s at %llu: %s\n", ktw_finding_name(f), (unsigned long long)ktw_finding_offset(f),
            ktw_finding_evidence(f));
-    return 0; /* nonzero stops the scan */
+    return 0;
 }
 
-ktw_catalog_create(KTW_GROUP_ALL, NULL, NULL, NULL, &catalog); /* once */
-ktw_catalog_compile(catalog);                                  /* read-only from here on */
-ktw_scanner_create(catalog, NULL, NULL, NULL, &scanner);       /* one per stream or thread */
-ktw_scanner_reset(scanner, "/etc/config/wireless", 20,        /* the name enables Wi-Fi and authorized_keys */
-                  KTW_STREAM_AUTO);                            /* or KTW_STREAM_BINARY for an executable */
+ktw_catalog_create(KTW_GROUP_ALL, NULL, NULL, NULL, &catalog);
+ktw_catalog_compile(catalog);
+ktw_scanner_create(catalog, NULL, NULL, NULL, &scanner);
+ktw_scanner_reset(scanner, "/etc/config/wireless", 20, KTW_STREAM_AUTO);
 while ((n = fread(buf, 1, sizeof buf, in)) > 0)
     ktw_feed(scanner, buf, n, print_finding, NULL);
 ktw_finish(scanner, print_finding, NULL);
 ```
 
-Complete programs: [`examples/basic.c`](examples/basic.c) and the command-line scanner
-[`examples/keytrawl.c`](examples/keytrawl.c), which prints one tab-separated line per finding:
+[`examples/basic.c`](examples/basic.c) is the shortest complete program. The API reference is
+[`include/keytrawl/keytrawl.h`](include/keytrawl/keytrawl.h); in short:
 
-```
-$ keytrawl creds
-creds	20	20	0	aws-access-key-id	likely	none	-	AKIA…MPLE
-$ keytrawl -a /usr/lib/libgnutls.so.30.42.0
-/usr/lib/libgnutls.so.30.42.0	1714080	155	0	pem-pkcs8-private-key	indicator	ed448	binary	-----BEGIN PRIVATE KEY----- (155 bytes)
-...
-```
+- a function that can fail returns `KTW_OK` or a code `ktw_strerror` describes
+- what `ktw_x_create` returns is released by `ktw_x_destroy`, which accepts `NULL`
+- arguments are never owned by the library; pointers it returns belong to it
+- the create functions take an allocator, or `NULL` for `malloc` and `free`
+- `ktw_feed` and `ktw_finish` never allocate, and a scanner stays near 24 KB on any input
 
-The header [`include/keytrawl/keytrawl.h`](include/keytrawl/keytrawl.h) is the API reference.
-Conventions:
-
-- every function that can fail returns `KTW_OK` or an error code; `ktw_strerror` describes it
-- what `ktw_x_create` returns is released only by `ktw_x_destroy`, which accepts `NULL`
-- functions never take ownership of their arguments; returned pointers belong to the library
-- pass your own allocator to the create functions, or `NULL` for `malloc`/`free`
-- `ktw_feed` and `ktw_finish` never allocate; a scanner holds about 24 KB whatever the input size
-
-## Numbers
+## Measured
 
 Measured for 0.2.0 on 2026-04-17, AMD Ryzen 7 5700G, GCC 16.2, release build. Every number has
 a script.
@@ -108,7 +103,7 @@ a script.
 | Key pairs of the test keys, 600 private and public combinations | 600 found in either order, 0 false pairs | `tests/test_keytrawl.c` |
 | Line coverage of `src/` by the tests | 94% | `scripts/coverage.sh` |
 
-## Build and install
+## Getting it
 
 ```sh
 cmake -S . -B build -DBUILD_SHARED_LIBS=ON
@@ -116,40 +111,16 @@ cmake --build build
 cmake --install build --prefix /usr/local
 ```
 
-Use it from CMake:
+Then `find_package(keytrawl REQUIRED)` with `keytrawl::keytrawl`, or `pkg-config --cflags --libs
+keytrawl`. `KEYTRAWL_BUILD_TESTS`, `KEYTRAWL_BUILD_EXAMPLES`, `KEYTRAWL_BUILD_FUZZ` and
+`KEYTRAWL_BUILD_BENCH` (POSIX) are off by default.
 
-```cmake
-find_package(keytrawl REQUIRED)
-target_link_libraries(app PRIVATE keytrawl::keytrawl)
-```
+To vendor it instead, `scripts/amalgamate.sh` writes `dist/keytrawl/keytrawl.h`; define
+`KTW_IMPLEMENTATION` in exactly one `.c` file before including it, and `KTW_STATIC` to keep its
+functions private there.
 
-Or with pkg-config:
+---
 
-```sh
-cc app.c $(pkg-config --cflags --libs keytrawl)
-```
-
-Options: `KEYTRAWL_BUILD_TESTS`, `KEYTRAWL_BUILD_EXAMPLES`, `KEYTRAWL_BUILD_FUZZ`,
-`KEYTRAWL_BUILD_BENCH` (POSIX), all off by default.
-
-## Single-file form
-
-`scripts/amalgamate.sh` writes `dist/keytrawl/keytrawl.h`. Copy it into your project and, in exactly
-one `.c` file:
-
-```c
-#define KTW_IMPLEMENTATION
-#include "keytrawl/keytrawl.h"
-```
-
-Define `KTW_STATIC` as well to keep every function private to that file.
-
-## Versioning
-
-Semantic Versioning. Compatible releases bump the minor version; incompatible ones bump the
-major version and the soname. Before 1.0.0 the interface may still change between minor
-versions. See [CHANGELOG.md](CHANGELOG.md).
-
-## License
-
-MIT, see [LICENSE](LICENSE).
+Semantic Versioning, with the soname following the major version; the
+[CHANGELOG](CHANGELOG.md) has an upgrading note for every incompatible change. Security reports:
+[SECURITY.md](SECURITY.md). MIT license.
